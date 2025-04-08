@@ -5,25 +5,30 @@
 ## 주요 기능
 
 ### 1. CODE 묵상법
+
 - **Capture (포착하기)**: 말씀을 읽으며 마음에 와닿는 구절이나 단어를 포착
 - **Organize (조직화하기)**: 포착한 말씀의 문맥을 살피고 관련 구절들을 연결
 - **Distill (압축하기)**: 말씀을 통해 깨달은 핵심 진리를 정리
 - **Express (표현하기)**: 깨달은 진리를 기도로 표현하고 적용점 찾기
 
 ### 2. 주요 기능
+
 - 📅 달력으로 묵상 기록 관리
 - 📚 성경 목록으로 묵상 기록 조회
 - 🔍 묵상 내용 검색
 - 📝 최근 묵상 목록 확인
 
 ## 기술 스택
+
 - HTML5
 - CSS3
 - Vanilla JavaScript
 - LocalStorage를 이용한 데이터 저장
 
 ## 시작하기
+
 1. 저장소를 클론합니다
+
 ```bash
 git clone [repository-url]
 ```
@@ -31,4 +36,5 @@ git clone [repository-url]
 2. index.html 파일을 웹 브라우저에서 엽니다
 
 ## 라이선스
+
 MIT License
