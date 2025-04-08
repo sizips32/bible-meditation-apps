@@ -1,0 +1,14 @@
+{
+  "port": 7777,
+  "files": ["./**/*.{html,htm,css,js}"],
+  "server": {
+    "baseDir": "./",
+    "routes": {
+      "/node_modules": "node_modules"
+    }
+  },
+  "watchOptions": {
+    "ignored": "node_modules"
+  },
+  "open": false
+} 

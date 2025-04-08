@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성경 묵상 앱</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <h1>✝️ 성경 묵상 다이어리</h1>
+    </header>
+
+    <nav class="nav">
+        <ul class="nav-list">
+            <li><a href="#" class="nav-link"><i class="fas fa-home"></i> 홈</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i> 달력</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-book-bible"></i> 성경 목록</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-search"></i> 검색</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <div class="calendar-controls">
+            <h2 id="current-month">📅</h2>
+        </div>
+
+        <div class="calendar"></div>
+        
+        <div class="meditation-container">
+            <!-- 묵상 내용이 여기에 동적으로 로드됩니다 -->
+        </div>
+
+        <!-- 묵상 작성/수정 폼 -->
+        <div class="meditation-form-container" style="display: none;">
+            <div class="meditation-form">
+                <h2 class="form-title">✏️ 묵상 작성하기</h2>
+                <form id="meditationForm">
+                    <input type="hidden" id="meditationDate" name="date">
+                    
+                    <div class="form-group">
+                        <label for="bibleReference">📖 성경 구절</label>
+                        <input type="text" id="bibleReference" name="bibleReference" required 
+                               placeholder="예: 요한복음 3:16">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">✨ 제목</label>
+                        <input type="text" id="title" name="title" required 
+                               placeholder="오늘의 묵상 제목을 입력하세요">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="capture">📝 Capture (포착하기)</label>
+                        <textarea id="capture" name="capture" required 
+                                placeholder="말씀을 처음 읽었을 때 마음에 와닿는 부분이나 특별히 눈에 띄는 단어, 구절을 적어보세요"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organize">🔍 Organize (조직화하기)</label>
+                        <textarea id="organize" name="organize" required 
+                                placeholder="말씀의 배경, 문맥, 구조를 파악하고 정리해보세요"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="distill">💡 Distill (압축하기)</label>
+                        <textarea id="distill" name="distill" required 
+                                placeholder="말씀을 통해 전달하고자 하는 핵심 메시지가 무엇인지 정리해보세요"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="express">🙏 Express (표현하기)</label>
+                        <textarea id="express" name="express" required 
+                                placeholder="말씀을 통해 깨달은 것을 실천하기 위한 구체적인 계획과 결단을 적어보세요"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-save"></i> 저장하기
+                        </button>
+                        <button type="button" class="btn-cancel" onclick="closeMeditationForm()">
+                            <i class="fas fa-times"></i> 취소하기
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html> 

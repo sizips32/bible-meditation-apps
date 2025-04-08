@@ -1,0 +1,24 @@
+{
+  "name": "bible-meditation-diary",
+  "version": "1.0.0",
+  "description": "성경 묵상 다이어리 애플리케이션",
+  "main": "script.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "lite-server",
+    "start": "lite-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@notionhq/client": "^2.3.0",
+    "@supabase/supabase-js": "^2.49.4"
+  },
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
