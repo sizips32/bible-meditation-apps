@@ -106,11 +106,20 @@ class Calendar {
       
       // 해당 날짜에 묵상 기록이 있는지 확인
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-      const hasMeditation = localStorage.getItem(dateStr) !== null;
+      const meditations = loadMeditations(); // 묵상 데이터 로드
+      const hasMeditation = meditations.some(m => m.date === dateStr);
+      
+      // 날짜 셀 클래스 설정
+      const dateClasses = [
+        'calendar-day',
+        isToday ? 'today' : '',
+        isSunday ? 'sunday' : '',
+        isSaturday ? 'saturday' : '',
+        hasMeditation ? 'has-meditation' : ''
+      ].filter(Boolean).join(' ');
       
       html += `
-        <div class="calendar-day ${isToday ? 'today' : ''} ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''}" 
-             data-date="${dateStr}">
+        <div class="${dateClasses}" data-date="${dateStr}">
           <span class="date-number">${i}</span>
           ${hasMeditation ? '<span class="meditation-indicator">✏️</span>' : ''}
         </div>`;
@@ -137,11 +146,16 @@ class Calendar {
     document.querySelector('.calendar').innerHTML = html;
 
     // 이벤트 리스너 추가
-    const days = document.querySelectorAll('.calendar-day');
+    const days = document.querySelectorAll('.calendar-day:not(.prev-month-day):not(.next-month-day)');
     days.forEach(day => {
       day.addEventListener('click', () => {
         const date = day.dataset.date;
-        showMeditationForm(date);
+        if (date) {
+          // 선택된 날짜 스타일 적용
+          days.forEach(d => d.classList.remove('selected'));
+          day.classList.add('selected');
+          showMeditationForm(date);
+        }
       });
     });
   }
