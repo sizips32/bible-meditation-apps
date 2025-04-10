@@ -11,6 +11,9 @@ let currentDate = new Date();
 let meditations = [];
 let currentMeditation = null;
 let currentView = 'calendar';
+let meditationPrayers = []; // 묵상 기도 목록
+let intercessoryPrayers = []; // 중보 기도 목록
+let currentPrayer = null; // 현재 편집 중인 기도
 
 // LocalStorage Functions
 function loadMeditations() {
@@ -20,6 +23,25 @@ function loadMeditations() {
 
 function saveMeditationsToStorage(meditations) {
   localStorage.setItem('meditations', JSON.stringify(meditations));
+}
+
+// 묵상 기도와 중보 기도 로드 및 저장 함수
+function loadMeditationPrayers() {
+  const stored = localStorage.getItem('meditationPrayers');
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveIntercessoryPrayers() {
+  localStorage.setItem('intercessoryPrayers', JSON.stringify(intercessoryPrayers));
+}
+
+function loadIntercessoryPrayers() {
+  const stored = localStorage.getItem('intercessoryPrayers');
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveMeditationPrayers() {
+  localStorage.setItem('meditationPrayers', JSON.stringify(meditationPrayers));
 }
 
 // Calendar Functions
@@ -95,6 +117,9 @@ function showHomeView() {
   currentView = 'home';
   meditationContainer.innerHTML = `
     <div class="home-container">
+      <div class="server-notice">
+        <p>🔔 서버가 포트 7780에서 실행 중입니다. <strong>http://localhost:7780</strong>로 접속하세요.</p>
+      </div>
       <div class="welcome-section">
         <h2>📖 성경 CODE 묵상법</h2>
         <p class="welcome-text">
@@ -703,19 +728,35 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     // 로컬 스토리지에서 데이터 로드
     meditations = loadMeditations();
+    meditationPrayers = loadMeditationPrayers();
+    intercessoryPrayers = loadIntercessoryPrayers();
     
     // 네비게이션 이벤트 리스너 등록
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
+        
+        // 이전 활성화된 링크의 클래스 제거
         navLinks.forEach(l => l.classList.remove('active'));
+        
+        // 클릭된 링크 활성화
         link.classList.add('active');
         
-        const text = link.textContent.trim();
-        if (text.includes('홈')) showHomeView();
-        else if (text.includes('달력')) showCalendarView();
-        else if (text.includes('성경 목록')) showBibleListView();
-        else if (text.includes('검색')) showSearchView();
+        // 클릭된 링크에 시각적 효과 추가
+        const effectElement = document.createElement('span');
+        effectElement.classList.add('nav-click-effect');
+        link.appendChild(effectElement);
+        
+        // 효과 요소 일정 시간 후 제거
+        setTimeout(() => {
+          effectElement.remove();
+        }, 500);
+        
+        // 링크의 data-view 속성으로 뷰 전환 (없으면 텍스트로 판단)
+        const viewType = link.dataset.view || getViewFromText(link.textContent.trim());
+        
+        // 뷰 전환 및 상태 업데이트
+        switchView(viewType);
       });
     });
     
@@ -731,4 +772,698 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Error initializing application:', error);
     alert('앱 초기화 중 오류가 발생했습니다. 페이지를 새로고침해주세요.');
   }
-}); 
+});
+
+/**
+ * 텍스트 내용으로 뷰 타입을 추출하는 함수
+ */
+function getViewFromText(text) {
+  if (text.includes('홈')) return 'home';
+  if (text.includes('달력')) return 'calendar';
+  if (text.includes('성경 목록')) return 'bible-list';
+  if (text.includes('묵상 기도')) return 'meditation-prayer';
+  if (text.includes('중보 기도')) return 'intercessory-prayer';
+  if (text.includes('검색')) return 'search';
+  return 'home'; // 기본값
+}
+
+/**
+ * 뷰 타입에 따라 적절한 뷰를 표시하는 함수
+ */
+function switchView(viewType) {
+  // 이전 뷰 상태 백업
+  const previousView = currentView;
+  
+  // 현재 뷰 업데이트
+  currentView = viewType;
+  
+  // 상태 표시줄 업데이트
+  updateStatusIndicator(viewType);
+  
+  // 뷰 타입에 따라 적절한 함수 호출
+  switch(viewType) {
+    case 'home':
+      showHomeView();
+      break;
+    case 'calendar':
+      showCalendarView();
+      break;
+    case 'bible-list':
+      showBibleListView();
+      break;
+    case 'meditation-prayer':
+      showMeditationPrayerView();
+      break;
+    case 'intercessory-prayer':
+      showIntercessoryPrayerView();
+      break;
+    case 'search':
+      showSearchView();
+      break;
+    default:
+      console.warn(`알 수 없는 뷰 타입: ${viewType}`);
+      showHomeView();
+  }
+  
+  // 뷰 전환 이벤트 발생 (커스텀 이벤트)
+  const viewChangeEvent = new CustomEvent('viewChanged', {
+    detail: { previous: previousView, current: currentView }
+  });
+  document.dispatchEvent(viewChangeEvent);
+}
+
+/**
+ * 현재 뷰를 상태 표시줄에 표시하는 함수
+ */
+function updateStatusIndicator(viewType) {
+  let statusText = '';
+  
+  switch(viewType) {
+    case 'home':
+      statusText = '홈';
+      break;
+    case 'calendar':
+      statusText = '달력';
+      break;
+    case 'bible-list':
+      statusText = '성경 목록';
+      break;
+    case 'meditation-prayer':
+      statusText = '묵상 기도';
+      break;
+    case 'intercessory-prayer':
+      statusText = '중보 기도';
+      break;
+    case 'search':
+      statusText = '검색';
+      break;
+    default:
+      statusText = '';
+  }
+  
+  // 상태 표시가 있는 경우에만 추가
+  if (statusText && document.querySelector('.header h1')) {
+    const statusIndicator = document.createElement('span');
+    statusIndicator.classList.add('current-view-indicator');
+    statusIndicator.textContent = ` - ${statusText}`;
+    
+    // 이전 상태 표시가 있으면 제거
+    const existingIndicator = document.querySelector('.current-view-indicator');
+    if (existingIndicator) {
+      existingIndicator.remove();
+    }
+    
+    document.querySelector('.header h1').appendChild(statusIndicator);
+  }
+}
+
+// 묵상 기도 뷰 표시
+function showMeditationPrayerView() {
+  currentView = 'meditation-prayer';
+  calendar.style.display = 'none';
+  
+  meditationContainer.innerHTML = `
+    <div class="prayer-container">
+      <div class="prayer-header">
+        <h2>🙏 묵상 기도</h2>
+        <p class="prayer-description">
+          말씀을 통해 받은 은혜와 깨달음을 기도로 표현하고 일기처럼 기록하는 공간입니다.
+        </p>
+      </div>
+      
+      <div class="prayer-actions">
+        <button class="btn-new-prayer" onclick="showMeditationPrayerForm()">
+          <i class="fas fa-plus"></i> 새 묵상 기도 작성
+        </button>
+      </div>
+      
+      <div class="prayer-list">
+        <h3>나의 묵상 기도 목록</h3>
+        <div id="meditationPrayersList"></div>
+      </div>
+    </div>
+  `;
+  
+  displayMeditationPrayers();
+}
+
+// 중보 기도 뷰 표시
+function showIntercessoryPrayerView() {
+  currentView = 'intercessory-prayer';
+  calendar.style.display = 'none';
+  
+  meditationContainer.innerHTML = `
+    <div class="prayer-container">
+      <div class="prayer-header">
+        <h2>✋ 중보 기도</h2>
+        <p class="prayer-description">
+          가족, 친구, 교회, 나라와 사회를 위한 중보 기도를 기록하고 응답을 기록하는 공간입니다.
+        </p>
+      </div>
+      
+      <div class="prayer-actions">
+        <button class="btn-new-prayer" onclick="showIntercessoryPrayerForm()">
+          <i class="fas fa-plus"></i> 새 중보 기도 작성
+        </button>
+      </div>
+      
+      <div class="prayer-stats">
+        <div class="prayer-stat-item">
+          <div class="stat-number">${intercessoryPrayers.length}</div>
+          <div class="stat-title">전체 기도</div>
+        </div>
+        <div class="prayer-stat-item">
+          <div class="stat-number">${intercessoryPrayers.filter(p => p.answered).length}</div>
+          <div class="stat-title">응답 받음</div>
+        </div>
+        <div class="prayer-stat-item">
+          <div class="stat-number">${intercessoryPrayers.filter(p => !p.answered).length}</div>
+          <div class="stat-title">기도 중</div>
+        </div>
+      </div>
+      
+      <div class="prayer-list">
+        <h3>나의 중보 기도 목록</h3>
+        <div id="intercessoryPrayersList"></div>
+      </div>
+    </div>
+  `;
+  
+  displayIntercessoryPrayers();
+}
+
+// 묵상 기도 폼 표시
+function showMeditationPrayerForm(prayerId = null) {
+  currentPrayer = null;
+  
+  if (prayerId) {
+    currentPrayer = meditationPrayers.find(p => p.id === prayerId);
+  }
+  
+  const formContainer = document.createElement('div');
+  formContainer.className = 'prayer-form-container';
+  
+  formContainer.innerHTML = `
+    <div class="prayer-form">
+      <h2 class="form-title">${currentPrayer ? '묵상 기도 수정하기' : '새 묵상 기도 작성하기'}</h2>
+      <form id="meditationPrayerForm">
+        <div class="form-group">
+          <label for="prayerTitle">제목</label>
+          <input type="text" id="prayerTitle" required placeholder="기도의 제목을 입력하세요" 
+                 value="${currentPrayer ? currentPrayer.title : ''}">
+        </div>
+        
+        <div class="form-group">
+          <label for="prayerScripture">관련 성경 구절 (선택사항)</label>
+          <input type="text" id="prayerScripture" placeholder="예: 시편 23:1-3" 
+                 value="${currentPrayer ? currentPrayer.scripture || '' : ''}">
+        </div>
+        
+        <div class="form-group">
+          <label for="prayerContent">기도 내용</label>
+          <textarea id="prayerContent" required placeholder="하나님께 드리는 기도를 적어주세요">${currentPrayer ? currentPrayer.content : ''}</textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="prayerReflection">묵상 및 적용점</label>
+          <textarea id="prayerReflection" placeholder="기도를 통해 깨달은 점이나 적용점을 적어주세요">${currentPrayer ? currentPrayer.reflection || '' : ''}</textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn-save">
+            <i class="fas fa-save"></i> 저장하기
+          </button>
+          <button type="button" class="btn-cancel" onclick="closePrayerForm()">
+            <i class="fas fa-times"></i> 취소하기
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  document.body.appendChild(formContainer);
+  
+  // 폼 제출 이벤트 리스너 등록
+  document.getElementById('meditationPrayerForm').addEventListener('submit', handleMeditationPrayerSubmit);
+}
+
+// 중보 기도 폼 표시
+function showIntercessoryPrayerForm(prayerId = null) {
+  currentPrayer = null;
+  
+  if (prayerId) {
+    currentPrayer = intercessoryPrayers.find(p => p.id === prayerId);
+  }
+  
+  const formContainer = document.createElement('div');
+  formContainer.className = 'prayer-form-container';
+  
+  formContainer.innerHTML = `
+    <div class="prayer-form">
+      <h2 class="form-title">${currentPrayer ? '중보 기도 수정하기' : '새 중보 기도 작성하기'}</h2>
+      <form id="intercessoryPrayerForm">
+        <div class="form-group">
+          <label for="prayerTitle">제목</label>
+          <input type="text" id="prayerTitle" required placeholder="기도의 제목을 입력하세요" 
+                 value="${currentPrayer ? currentPrayer.title : ''}">
+        </div>
+        
+        <div class="form-group">
+          <label for="prayerCategory">카테고리</label>
+          <select id="prayerCategory" required>
+            <option value="">카테고리 선택</option>
+            <option value="가족" ${currentPrayer && currentPrayer.category === '가족' ? 'selected' : ''}>가족</option>
+            <option value="친구/지인" ${currentPrayer && currentPrayer.category === '친구/지인' ? 'selected' : ''}>친구/지인</option>
+            <option value="교회" ${currentPrayer && currentPrayer.category === '교회' ? 'selected' : ''}>교회</option>
+            <option value="나라와 사회" ${currentPrayer && currentPrayer.category === '나라와 사회' ? 'selected' : ''}>나라와 사회</option>
+            <option value="선교" ${currentPrayer && currentPrayer.category === '선교' ? 'selected' : ''}>선교</option>
+            <option value="기타" ${currentPrayer && currentPrayer.category === '기타' ? 'selected' : ''}>기타</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="prayerContent">기도 내용</label>
+          <textarea id="prayerContent" required placeholder="중보 기도 내용을 적어주세요">${currentPrayer ? currentPrayer.content : ''}</textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="prayerScripture">관련 성경 구절 (선택사항)</label>
+          <input type="text" id="prayerScripture" placeholder="예: 로마서 8:26-27" 
+                 value="${currentPrayer ? currentPrayer.scripture || '' : ''}">
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="prayerAnswered" ${currentPrayer && currentPrayer.answered ? 'checked' : ''}>
+          <label for="prayerAnswered">기도 응답 받음</label>
+        </div>
+        
+        <div class="form-group" id="answerGroup" style="${currentPrayer && currentPrayer.answered ? '' : 'display: none;'}">
+          <label for="prayerAnswer">응답 내용 및 감사</label>
+          <textarea id="prayerAnswer" placeholder="기도 응답 내용과 감사를 적어주세요">${currentPrayer && currentPrayer.answer ? currentPrayer.answer : ''}</textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn-save">
+            <i class="fas fa-save"></i> 저장하기
+          </button>
+          <button type="button" class="btn-cancel" onclick="closePrayerForm()">
+            <i class="fas fa-times"></i> 취소하기
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  document.body.appendChild(formContainer);
+  
+  // 응답 체크박스 이벤트 리스너
+  document.getElementById('prayerAnswered').addEventListener('change', function() {
+    document.getElementById('answerGroup').style.display = this.checked ? '' : 'none';
+  });
+  
+  // 폼 제출 이벤트 리스너 등록
+  document.getElementById('intercessoryPrayerForm').addEventListener('submit', handleIntercessoryPrayerSubmit);
+}
+
+// 기도 폼 닫기
+function closePrayerForm() {
+  const formContainer = document.querySelector('.prayer-form-container');
+  if (formContainer) {
+    formContainer.remove();
+  }
+}
+
+// 묵상 기도 제출 처리
+function handleMeditationPrayerSubmit(event) {
+  event.preventDefault();
+  
+  const prayerData = {
+    id: currentPrayer ? currentPrayer.id : Date.now().toString(),
+    date: new Date().toISOString(),
+    title: document.getElementById('prayerTitle').value,
+    scripture: document.getElementById('prayerScripture').value,
+    content: document.getElementById('prayerContent').value,
+    reflection: document.getElementById('prayerReflection').value
+  };
+  
+  if (currentPrayer) {
+    // 수정 모드
+    const index = meditationPrayers.findIndex(p => p.id === currentPrayer.id);
+    if (index !== -1) {
+      prayerData.date = currentPrayer.date; // 원래 생성 날짜 유지
+      prayerData.updatedAt = new Date().toISOString(); // 수정 날짜 추가
+      meditationPrayers[index] = prayerData;
+    }
+  } else {
+    // 새 기도 작성 모드
+    meditationPrayers.push(prayerData);
+  }
+  
+  saveMeditationPrayers();
+  closePrayerForm();
+  showMeditationPrayerView();
+}
+
+// 중보 기도 제출 처리
+function handleIntercessoryPrayerSubmit(event) {
+  event.preventDefault();
+  
+  const answered = document.getElementById('prayerAnswered').checked;
+  
+  const prayerData = {
+    id: currentPrayer ? currentPrayer.id : Date.now().toString(),
+    date: new Date().toISOString(),
+    title: document.getElementById('prayerTitle').value,
+    category: document.getElementById('prayerCategory').value,
+    content: document.getElementById('prayerContent').value,
+    scripture: document.getElementById('prayerScripture').value,
+    answered: answered,
+    answer: answered ? document.getElementById('prayerAnswer').value : ''
+  };
+  
+  if (currentPrayer) {
+    // 수정 모드
+    const index = intercessoryPrayers.findIndex(p => p.id === currentPrayer.id);
+    if (index !== -1) {
+      prayerData.date = currentPrayer.date; // 원래 생성 날짜 유지
+      prayerData.updatedAt = new Date().toISOString(); // 수정 날짜 추가
+      intercessoryPrayers[index] = prayerData;
+    }
+  } else {
+    // 새 기도 작성 모드
+    intercessoryPrayers.push(prayerData);
+  }
+  
+  saveIntercessoryPrayers();
+  closePrayerForm();
+  showIntercessoryPrayerView();
+}
+
+// 묵상 기도 목록 표시
+function displayMeditationPrayers() {
+  const container = document.getElementById('meditationPrayersList');
+  if (!container) return;
+  
+  if (meditationPrayers.length === 0) {
+    container.innerHTML = `
+      <div class="no-prayers">
+        <p>아직 작성된 묵상 기도가 없습니다.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // 날짜 기준 최신순 정렬
+  const sortedPrayers = [...meditationPrayers].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  container.innerHTML = `
+    <div class="prayer-items">
+      ${sortedPrayers.map(prayer => `
+        <div class="prayer-item" data-id="${prayer.id}">
+          <div class="prayer-item-header">
+            <h4>${prayer.title}</h4>
+            <div class="prayer-meta">
+              <span class="prayer-date">${formatDate(prayer.date)}</span>
+              ${prayer.scripture ? `<span class="prayer-scripture">📖 ${prayer.scripture}</span>` : ''}
+            </div>
+          </div>
+          <div class="prayer-item-content">
+            <p>${prayer.content.substring(0, 100)}${prayer.content.length > 100 ? '...' : ''}</p>
+          </div>
+          <div class="prayer-item-actions">
+            <button class="btn-view" onclick="viewMeditationPrayer('${prayer.id}')">
+              <i class="fas fa-eye"></i> 보기
+            </button>
+            <button class="btn-edit" onclick="editMeditationPrayer('${prayer.id}')">
+              <i class="fas fa-edit"></i> 수정
+            </button>
+            <button class="btn-delete" onclick="deleteMeditationPrayer('${prayer.id}')">
+              <i class="fas fa-trash"></i> 삭제
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// 중보 기도 목록 표시
+function displayIntercessoryPrayers() {
+  const container = document.getElementById('intercessoryPrayersList');
+  if (!container) return;
+  
+  if (intercessoryPrayers.length === 0) {
+    container.innerHTML = `
+      <div class="no-prayers">
+        <p>아직 작성된 중보 기도가 없습니다.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // 날짜 기준 최신순 정렬
+  const sortedPrayers = [...intercessoryPrayers].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  // 카테고리별 그룹화
+  const groupedPrayers = sortedPrayers.reduce((groups, prayer) => {
+    const category = prayer.category || '기타';
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(prayer);
+    return groups;
+  }, {});
+  
+  container.innerHTML = `
+    <div class="prayer-categories">
+      ${Object.entries(groupedPrayers).map(([category, prayers]) => `
+        <div class="prayer-category">
+          <h4 class="category-title">${category} (${prayers.length})</h4>
+          <div class="prayer-items">
+            ${prayers.map(prayer => `
+              <div class="prayer-item ${prayer.answered ? 'prayer-answered' : ''}" data-id="${prayer.id}">
+                <div class="prayer-item-header">
+                  <h4>${prayer.title}</h4>
+                  <div class="prayer-meta">
+                    <span class="prayer-date">${formatDate(prayer.date)}</span>
+                    ${prayer.answered ? '<span class="prayer-status answered">✅ 응답됨</span>' : '<span class="prayer-status ongoing">🙏 기도 중</span>'}
+                  </div>
+                </div>
+                <div class="prayer-item-content">
+                  <p>${prayer.content.substring(0, 100)}${prayer.content.length > 100 ? '...' : ''}</p>
+                </div>
+                <div class="prayer-item-actions">
+                  <button class="btn-view" onclick="viewIntercessoryPrayer('${prayer.id}')">
+                    <i class="fas fa-eye"></i> 보기
+                  </button>
+                  <button class="btn-edit" onclick="editIntercessoryPrayer('${prayer.id}')">
+                    <i class="fas fa-edit"></i> 수정
+                  </button>
+                  <button class="btn-delete" onclick="deleteIntercessoryPrayer('${prayer.id}')">
+                    <i class="fas fa-trash"></i> 삭제
+                  </button>
+                  ${!prayer.answered ? `
+                    <button class="btn-answer" onclick="markPrayerAsAnswered('${prayer.id}')">
+                      <i class="fas fa-check"></i> 응답 표시
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// 묵상 기도 보기
+function viewMeditationPrayer(prayerId) {
+  const prayer = meditationPrayers.find(p => p.id === prayerId);
+  if (!prayer) return;
+  
+  const viewContainer = document.createElement('div');
+  viewContainer.className = 'prayer-view-container';
+  
+  viewContainer.innerHTML = `
+    <div class="prayer-view">
+      <div class="prayer-view-close" onclick="closePrayerView()">
+        <i class="fas fa-times"></i>
+      </div>
+      
+      <div class="prayer-view-header">
+        <h2>${prayer.title}</h2>
+        <div class="prayer-meta">
+          <p class="prayer-date">${formatDate(prayer.date)}</p>
+          ${prayer.scripture ? `<p class="prayer-scripture">📖 ${prayer.scripture}</p>` : ''}
+        </div>
+      </div>
+      
+      <div class="prayer-view-section">
+        <h3>기도 내용</h3>
+        <div class="prayer-content">${prayer.content}</div>
+      </div>
+      
+      ${prayer.reflection ? `
+        <div class="prayer-view-section">
+          <h3>묵상 및 적용점</h3>
+          <div class="prayer-reflection">${prayer.reflection}</div>
+        </div>
+      ` : ''}
+      
+      <div class="prayer-view-actions">
+        <button class="btn-edit" onclick="editMeditationPrayer('${prayer.id}'); closePrayerView();">
+          <i class="fas fa-edit"></i> 수정하기
+        </button>
+        <button class="btn-close" onclick="closePrayerView()">
+          <i class="fas fa-arrow-left"></i> 돌아가기
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(viewContainer);
+}
+
+// 중보 기도 보기
+function viewIntercessoryPrayer(prayerId) {
+  const prayer = intercessoryPrayers.find(p => p.id === prayerId);
+  if (!prayer) return;
+  
+  const viewContainer = document.createElement('div');
+  viewContainer.className = 'prayer-view-container';
+  
+  viewContainer.innerHTML = `
+    <div class="prayer-view">
+      <div class="prayer-view-close" onclick="closePrayerView()">
+        <i class="fas fa-times"></i>
+      </div>
+      
+      <div class="prayer-view-header">
+        <h2>${prayer.title}</h2>
+        <div class="prayer-meta">
+          <p class="prayer-category">${prayer.category}</p>
+          <p class="prayer-date">${formatDate(prayer.date)}</p>
+          ${prayer.scripture ? `<p class="prayer-scripture">📖 ${prayer.scripture}</p>` : ''}
+          <p class="prayer-status ${prayer.answered ? 'answered' : 'ongoing'}">
+            ${prayer.answered ? '✅ 응답됨' : '🙏 기도 중'}
+          </p>
+        </div>
+      </div>
+      
+      <div class="prayer-view-section">
+        <h3>기도 내용</h3>
+        <div class="prayer-content">${prayer.content}</div>
+      </div>
+      
+      ${prayer.answered && prayer.answer ? `
+        <div class="prayer-view-section">
+          <h3>응답 내용 및 감사</h3>
+          <div class="prayer-answer">${prayer.answer}</div>
+        </div>
+      ` : ''}
+      
+      <div class="prayer-view-actions">
+        <button class="btn-edit" onclick="editIntercessoryPrayer('${prayer.id}'); closePrayerView();">
+          <i class="fas fa-edit"></i> 수정하기
+        </button>
+        ${!prayer.answered ? `
+          <button class="btn-answer" onclick="markPrayerAsAnswered('${prayer.id}'); closePrayerView();">
+            <i class="fas fa-check"></i> 응답 표시하기
+          </button>
+        ` : ''}
+        <button class="btn-close" onclick="closePrayerView()">
+          <i class="fas fa-arrow-left"></i> 돌아가기
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(viewContainer);
+}
+
+// 기도 보기 닫기
+function closePrayerView() {
+  const viewContainer = document.querySelector('.prayer-view-container');
+  if (viewContainer) {
+    viewContainer.remove();
+  }
+}
+
+// 묵상 기도 수정
+function editMeditationPrayer(prayerId) {
+  showMeditationPrayerForm(prayerId);
+}
+
+// 중보 기도 수정
+function editIntercessoryPrayer(prayerId) {
+  showIntercessoryPrayerForm(prayerId);
+}
+
+// 묵상 기도 삭제
+function deleteMeditationPrayer(prayerId) {
+  if (!confirm('이 기도를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  
+  meditationPrayers = meditationPrayers.filter(p => p.id !== prayerId);
+  saveMeditationPrayers();
+  showMeditationPrayerView();
+}
+
+// 중보 기도 삭제
+function deleteIntercessoryPrayer(prayerId) {
+  if (!confirm('이 기도를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  
+  intercessoryPrayers = intercessoryPrayers.filter(p => p.id !== prayerId);
+  saveIntercessoryPrayers();
+  showIntercessoryPrayerView();
+}
+
+// 중보 기도 응답 표시
+function markPrayerAsAnswered(prayerId) {
+  const prayer = intercessoryPrayers.find(p => p.id === prayerId);
+  if (!prayer) return;
+  
+  const answerFormContainer = document.createElement('div');
+  answerFormContainer.className = 'prayer-form-container';
+  
+  answerFormContainer.innerHTML = `
+    <div class="prayer-form">
+      <h2 class="form-title">기도 응답 기록하기</h2>
+      <form id="prayerAnswerForm">
+        <div class="form-group">
+          <label for="prayerAnswer">응답 내용 및 감사</label>
+          <textarea id="prayerAnswer" required placeholder="기도 응답 내용과 감사를 적어주세요"></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn-save">
+            <i class="fas fa-save"></i> 저장하기
+          </button>
+          <button type="button" class="btn-cancel" onclick="closePrayerForm()">
+            <i class="fas fa-times"></i> 취소하기
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  document.body.appendChild(answerFormContainer);
+  
+  // 폼 제출 이벤트 리스너 등록
+  document.getElementById('prayerAnswerForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const answer = document.getElementById('prayerAnswer').value;
+    const index = intercessoryPrayers.findIndex(p => p.id === prayerId);
+    
+    if (index !== -1) {
+      intercessoryPrayers[index].answered = true;
+      intercessoryPrayers[index].answer = answer;
+      intercessoryPrayers[index].answeredAt = new Date().toISOString();
+      
+      saveIntercessoryPrayers();
+      closePrayerForm();
+      showIntercessoryPrayerView();
+    }
+  });
+} 

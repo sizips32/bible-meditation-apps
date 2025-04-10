@@ -117,13 +117,30 @@ git clone https://github.com/sizips32/bible-meditation-apps.git
 cd bible-meditation-apps
 ```
 
-3. index.html 파일을 웹 브라우저에서 엽니다
+3. 의존성 패키지를 설치합니다
+
+```bash
+npm install
+```
+
+4. 개발 서버를 실행합니다
+
+```bash
+npm run dev
+```
+
+5. 브라우저에서 애플리케이션에 접속합니다
+
+```
+http://localhost:7780
+```
 
 ### 요구사항
 
 - 모던 웹 브라우저 (Chrome, Firefox, Safari, Edge 최신 버전)
 - JavaScript 활성화 필요
 - 로컬 저장소 접근 권한 필요
+- Node.js 및 npm (개발 서버 실행 시)
 
 ## 📝 사용 방법
 

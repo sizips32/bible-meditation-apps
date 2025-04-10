@@ -1,5 +1,5 @@
 {
-  "port": 7777,
+  "port": 7780,
   "files": ["./**/*.{html,htm,css,js}"],
   "server": {
     "baseDir": "./",
