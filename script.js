@@ -267,29 +267,23 @@ function showHomeView() {
       <div class="action-section">
         <h3>🌟 지금 바로 시작해보세요!</h3>
         <div class="action-buttons">
-          <button class="action-btn calendar-btn" onclick="showCalendarView()">
+          <button class="action-btn calendar-btn" onclick="handleCalendarStart()">
             <span>📅</span>
             <span>달력으로 시작하기</span>
           </button>
-          <button class="action-btn bible-btn" onclick="showBibleListView()">
+          <button class="action-btn bible-btn" onclick="handleBibleStart()">
             <span>📚</span>
             <span>성경으로 시작하기</span>
           </button>
-          <button class="action-btn meditation-btn" onclick="showMeditationForm('${new Date().toISOString().split('T')[0]}')">
+          <button class="action-btn meditation-btn" onclick="handleNewMeditation()">
             <span>✏️</span>
             <span>새 묵상 작성하기</span>
           </button>
         </div>
       </div>
-
-      <div class="recent-section">
-        <h3>📝 최근 묵상</h3>
-        <div id="recentMeditations"></div>
-      </div>
     </div>
   `;
   calendar.style.display = 'none';
-  displayRecentMeditations();
 }
 
 function showCalendarView() {
@@ -571,13 +565,14 @@ function showSearchView() {
       <div class="recent-meditations">
         <h3>📝 최근 묵상</h3>
         <div id="recentMeditations"></div>
+        <div class="pagination" id="meditationPagination"></div>
       </div>
     </div>
   `;
   calendar.style.display = 'none';
   
   // 최근 묵상 표시
-  displayRecentMeditations();
+  displayRecentMeditations(1); // 첫 페이지 표시
   
   // 검색 입력창 엔터 키 이벤트 처리
   document.getElementById('searchInput').addEventListener('keypress', (e) => {
@@ -844,23 +839,36 @@ function displaySearchResults(results) {
   `;
 }
 
-function displayRecentMeditations() {
-  const recentMeditations = [...meditations]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 3);  // 10개에서 3개로 변경
-
+function displayRecentMeditations(currentPage = 1) {
   const container = document.getElementById('recentMeditations');
-  if (!container) return;
+  const paginationContainer = document.getElementById('meditationPagination');
+  if (!container || !paginationContainer) return;
 
-  if (recentMeditations.length === 0) {
+  // 페이지당 항목 수
+  const itemsPerPage = 10;
+  
+  // 날짜순으로 정렬된 묵상 목록
+  const sortedMeditations = [...meditations].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  // 전체 페이지 수 계산
+  const totalPages = Math.ceil(sortedMeditations.length / itemsPerPage);
+  
+  // 현재 페이지의 묵상 목록
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentMeditations = sortedMeditations.slice(startIndex, endIndex);
+
+  if (currentMeditations.length === 0) {
     container.innerHTML = `
       <div class="no-results">
         <p>아직 작성된 묵상이 없습니다.</p>
       </div>
     `;
+    paginationContainer.innerHTML = '';
     return;
   }
 
+  // 묵상 목록 표시
   container.innerHTML = `
     <table class="recent-meditations-table">
       <thead>
@@ -872,7 +880,7 @@ function displayRecentMeditations() {
         </tr>
       </thead>
       <tbody>
-        ${recentMeditations.map(meditation => `
+        ${currentMeditations.map(meditation => `
           <tr onclick="displayMeditation(${JSON.stringify(meditation).replace(/"/g, '&quot;')})">
             <td class="date-cell">${formatDate(meditation.date)}</td>
             <td class="bible-cell">📖 ${meditation.bibleReference}</td>
@@ -883,6 +891,34 @@ function displayRecentMeditations() {
       </tbody>
     </table>
   `;
+
+  // 페이지네이션 표시
+  if (totalPages > 1) {
+    let paginationHTML = '<div class="pagination-controls">';
+    
+    // 이전 페이지 버튼
+    if (currentPage > 1) {
+      paginationHTML += `<button onclick="displayRecentMeditations(${currentPage - 1})">◀</button>`;
+    }
+    
+    // 페이지 번호
+    for (let i = 1; i <= totalPages; i++) {
+      paginationHTML += `
+        <button class="${i === currentPage ? 'active' : ''}" 
+                onclick="displayRecentMeditations(${i})">${i}</button>
+      `;
+    }
+    
+    // 다음 페이지 버튼
+    if (currentPage < totalPages) {
+      paginationHTML += `<button onclick="displayRecentMeditations(${currentPage + 1})">▶</button>`;
+    }
+    
+    paginationHTML += '</div>';
+    paginationContainer.innerHTML = paginationHTML;
+  } else {
+    paginationContainer.innerHTML = '';
+  }
 }
 
 // Utility Functions
@@ -1644,4 +1680,121 @@ function markPrayerAsAnswered(prayerId) {
       showIntercessoryPrayerView();
     }
   });
-} 
+}
+
+// 데이터베이스 관련 함수들
+async function saveMeditationToDatabase(meditationData) {
+  try {
+    const response = await fetch('http://localhost:7780/api/meditations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(meditationData)
+    });
+
+    if (!response.ok) {
+      throw new Error('서버 응답 오류');
+    }
+
+    const result = await response.json();
+    showNotification('묵상이 성공적으로 저장되었습니다.', 'success');
+    return result;
+  } catch (error) {
+    console.error('서버 저장 실패:', error);
+    showNotification('서버 저장에 실패했습니다. 로컬에 저장합니다.', 'error');
+    
+    // 로컬 스토리지에 저장
+    const meditations = JSON.parse(localStorage.getItem('meditations') || '[]');
+    meditations.push(meditationData);
+    localStorage.setItem('meditations', JSON.stringify(meditations));
+    
+    throw error;
+  }
+}
+
+// 홈 화면 버튼 클릭 이벤트 핸들러들
+function handleCalendarStart() {
+  showCalendarView();
+  showMeditationForm(new Date().toISOString().split('T')[0]);
+}
+
+function handleBibleStart() {
+  // 성경 목록 메뉴로 이동
+  showBibleListView();
+  
+  // 네비게이션 메뉴 활성화 상태 업데이트
+  navLinks.forEach(link => link.classList.remove('active'));
+  const bibleLink = Array.from(navLinks).find(link => link.dataset.view === 'bible-list');
+  if (bibleLink) {
+    bibleLink.classList.add('active');
+  }
+}
+
+function handleNewMeditation() {
+  // 묵상 기도 메뉴로 이동
+  showMeditationPrayerView();
+  
+  // 네비게이션 메뉴 활성화 상태 업데이트
+  navLinks.forEach(link => link.classList.remove('active'));
+  const meditationPrayerLink = Array.from(navLinks).find(link => link.dataset.view === 'meditation-prayer');
+  if (meditationPrayerLink) {
+    meditationPrayerLink.classList.add('active');
+  }
+  
+  // 새 묵상 기도 작성 폼 표시
+  showMeditationPrayerForm();
+}
+
+// 묵상 폼 저장 처리 함수
+async function saveMeditation() {
+  const meditationData = {
+    date: document.getElementById('meditationDate').value,
+    bibleReference: document.getElementById('bibleReference').value,
+    title: document.getElementById('title').value,
+    capture: document.getElementById('capture').value,
+    organize: document.getElementById('organize').value,
+    distill: document.getElementById('distill').value,
+    express: document.getElementById('express').value
+  };
+
+  try {
+    // 데이터베이스에 저장 시도
+    await saveMeditationToDatabase(meditationData);
+    
+    // 모달 닫기
+    const modal = document.querySelector('.meditation-modal');
+    if (modal) {
+      modal.remove();
+    }
+    
+    // 성공 메시지 표시
+    showNotification('묵상이 성공적으로 저장되었습니다.', 'success');
+  } catch (error) {
+    console.error('저장 중 오류 발생:', error);
+    showNotification('저장 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+  }
+}
+
+// 알림 메시지 표시 함수
+function showNotification(message, type = 'info') {
+  // 기존 알림 제거
+  const existingNotification = document.querySelector('.notification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  // 새 알림 생성
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+
+  // 알림 추가
+  document.body.appendChild(notification);
+
+  // 3초 후 알림 제거
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}

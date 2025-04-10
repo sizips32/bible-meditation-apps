@@ -168,6 +168,128 @@
           padding: 1rem;
         }
       }
+
+      /* 알림 메시지 스타일 */
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 2000;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      .notification.success {
+        background-color: #4CAF50;
+      }
+
+      .notification.error {
+        background-color: #f44336;
+      }
+
+      .notification.info {
+        background-color: #2196F3;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* 페이지네이션 스타일 */
+      .pagination {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      .pagination-controls {
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .pagination-controls button {
+        min-width: 32px;
+        height: 32px;
+        border: none;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #495057;
+        transition: all 0.2s ease;
+      }
+
+      .pagination-controls button:hover {
+        background: #e9ecef;
+        color: #228be6;
+      }
+
+      .pagination-controls button.active {
+        background: #228be6;
+        color: white;
+      }
+
+      /* 최근 묵상 테이블 스타일 개선 */
+      .recent-meditations-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .recent-meditations-table th,
+      .recent-meditations-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .recent-meditations-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .recent-meditations-table tr:hover {
+        background: #f8f9fa;
+        cursor: pointer;
+      }
+
+      .recent-meditations-table .date-cell {
+        width: 15%;
+        white-space: nowrap;
+      }
+
+      .recent-meditations-table .bible-cell {
+        width: 20%;
+      }
+
+      .recent-meditations-table .title-cell {
+        width: 25%;
+      }
+
+      .recent-meditations-table .preview-cell {
+        width: 40%;
+        color: #666;
+      }
     </style>
 </head>
 <body>
