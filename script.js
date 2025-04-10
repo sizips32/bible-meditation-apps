@@ -80,11 +80,11 @@ class Calendar {
         <div class="calendar-days">
           <div class="day-name sunday">일</div>
           <div class="day-name">월</div>
-          <div class="day-name">화</div>
+          <div class="day-name">화(삼일)</div>
           <div class="day-name">수</div>
           <div class="day-name">목</div>
-          <div class="day-name">금</div>
-          <div class="day-name saturday">토</div>
+          <div class="day-name">금(안식일 환영)</div>
+          <div class="day-name saturday">토(안식일 예배)</div>
     `;
 
     // 이전 달의 마지막 날짜들
