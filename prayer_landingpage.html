@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>중보기도회 광고</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #FFFFFF;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      transition: all 1s ease;
+      padding-top: 60px;
+    }
+    #slide {
+      width: 90%;
+      max-width: 1600px;
+      margin-bottom: 20px;
+      white-space: pre-line;
+      padding: 20px;
+      font-size: clamp(1.5rem, 5vw, 4rem);
+      transition: all 1s ease;
+      line-height: 1.5;
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .control-panel {
+      position: fixed;
+      bottom: 20px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+    .btn {
+      padding: 12px 24px;
+      font-size: clamp(0.8rem, 2vw, 1.2rem);
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.25);
+      color: inherit;
+      border: none;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      backdrop-filter: blur(5px);
+    }
+    .btn:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+    }
+    #fullscreenButton {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+    #fullscreenButton:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+    #colorPicker {
+      width: 50px;
+      height: 40px;
+      padding: 0;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .hide-controls .control-panel {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .hide-controls .control-panel:hover {
+      opacity: 1;
+    }
+    .qr-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1001;
+    }
+    .qr-modal img {
+      max-width: 300px;
+      height: auto;
+    }
+    .qr-modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 24px;
+    }
+    @media (orientation: portrait) {
+      #slide {
+        width: 95%;
+        font-size: clamp(1.2rem, 7vw, 3rem);
+      }
+    }
+    @media (min-width: 2560px) {
+      #slide {
+        max-width: 2000px;
+        font-size: clamp(2rem, 4vw, 5rem);
+      }
+    }
+    /* 네비게이션 스타일 */
+    .nav-container {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      padding: 10px 0;
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .nav-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .ad-section {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 300px;
+      z-index: 999;
+    }
+
+    .music-player {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .music-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .music-info {
+      font-size: 0.9rem;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav-container">
+    <div class="nav-content">
+      <div class="nav-title">중보기도회</div>
+      <div class="music-player">
+        <div class="music-controls">
+          <button id="musicButton" class="btn" onclick="toggleMusic()">🔈 재생</button>
+          <span id="musicTime" class="music-info">00:00 / 00:00</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="ad-section" id="adSection">
+    <h3>공지사항</h3>
+    <div id="adContent"></div>
+  </div>
+
+  <div id="slide"></div>
+  <div class="control-panel">
+    <button id="fullscreenButton" class="btn">전체화면</button>
+    <button id="themeButton" class="btn">테마 변경</button>
+    <button id="googleSlideButton" class="btn">구글 슬라이드</button>
+    <button id="qrButton" class="btn">QR 코드</button>
+  </div>
+
+  <div id="qrModal" class="qr-modal">
+    <span class="close-btn">&times;</span>
+    <div id="qrCode"></div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    // 설정값
+    const GOOGLE_SLIDE_URL = "https://docs.google.com/presentation/u/0/";
+    const QR_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfvbtqWGPS2iVopJH9t75bPREoa8suUrbiLivdOjCxTPiRO3g/viewform";
+    const BACKGROUND_MUSIC_URL = "./Celestial Whisper.mp3";
+
+    // 표시할 문구(기도제목, 말씀, 광고문구)들을 슬라이드 형식으로 담은 배열
+    const slides = [
+      "안식일 말씀 묵상기도 & \n\n중보기도 제목을 나눕니다.",
+      "자유롭게 기도에 참가하세요!",
+      "(중보기도 1)\n\n4월 19일 가족 친지 선교의 날 부흥을 위한 기도",
+      "(중보기도 2)\n\n12기 침례자들을 위한 중보기도 드립니다",
+      "(중보기도 3)\n\n교우들의 가정마다 성령의 인도하심을 기도드립니다",
+      "성경 말씀: 데살로니가전서 5장 17절\n\n'쉬지 말고 기도하라'",
+      "성경 말씀: 빌립보서 4장 6절\n\n'아무 것도 염려하지 말고 다만 모든 일에 기도와 간구로...'",
+      "성경 말씀: 마태복음 7장 7절\n\n'구하라 그리하면 너희에게 주실 것이요\n\n찾으라 그리하면 찾을 것이요...'",
+      "함께 하는 기도 시간\n\n주님과의 깊은 교제에 초대합니다."
+    ];
+
+    // 색상 테마 정의
+    const colorThemes = [
+      { bg: '#1a1a1a', text: '#ffffff', name: '다크' },
+      { bg: '#f0f0f0', text: '#2c3e50', name: '라이트' },
+      { bg: '#2c3e50', text: '#ecf0f1', name: '미드나잇' },
+      { bg: '#f1c40f', text: '#2c3e50', name: '선샤인' },
+      { bg: '#27ae60', text: '#ffffff', name: '포레스트' },
+      { bg: '#8e44ad', text: '#ffffff', name: '미스틱' },
+      { bg: '#2980b9', text: '#ffffff', name: '오션' },
+      { bg: '#c0392b', text: '#ffffff', name: '루비' },
+      { bg: '#2c3e50', text: '#f1c40f', name: '골드' },
+      { bg: '#16a085', text: '#ffffff', name: '에메랄드' }
+    ];
+
+    let currentThemeIndex = 0;
+    let currentIndex = 0;
+    let isPlaying = true;
+    let intervalId = null;
+    let audio = null;
+    let isMusicPlaying = false;
+
+    const displayElement = document.getElementById("slide");
+    const fullscreenButton = document.getElementById("fullscreenButton");
+    const themeButton = document.getElementById("themeButton");
+    const googleSlideButton = document.getElementById("googleSlideButton");
+    const qrButton = document.getElementById("qrButton");
+    const qrModal = document.getElementById("qrModal");
+    
+    // QR 코드 초기화
+    const qrCode = new QRCode(document.getElementById("qrCode"), {
+      text: QR_FORM_URL,
+      width: 256,
+      height: 256,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // 광고 내용 배열
+    const advertisements = [
+      "4월 19일 가족 친지 선교의 날",
+      "매주 수요일 저녁 7시 중보기도회",
+      "12기 침례자 모집 중",
+      "교우 가정 심방 신청 받습니다"
+    ];
+
+    let currentAdIndex = 0;
+    const adContent = document.getElementById("adContent");
+
+    // 광고 순환 함수
+    function rotateAd() {
+      adContent.textContent = advertisements[currentAdIndex];
+      currentAdIndex = (currentAdIndex + 1) % advertisements.length;
+    }
+
+    // 음악 시간 업데이트 함수
+    function updateMusicTime() {
+      if (audio && !audio.paused) {
+        const current = Math.floor(audio.currentTime);
+        const duration = Math.floor(audio.duration);
+        const currentMin = Math.floor(current / 60);
+        const currentSec = current % 60;
+        const durationMin = Math.floor(duration / 60);
+        const durationSec = duration % 60;
+        
+        document.getElementById("musicTime").textContent = 
+          `${currentMin}:${currentSec.toString().padStart(2, '0')} / ${durationMin}:${durationSec.toString().padStart(2, '0')}`;
+      }
+    }
+
+    // 음악 초기화 함수 개선
+    function initAudio() {
+      if (!audio) {
+        audio = new Audio(BACKGROUND_MUSIC_URL);
+        audio.loop = true;
+        
+        audio.addEventListener('timeupdate', updateMusicTime);
+        audio.addEventListener('ended', () => {
+          audio.currentTime = 0;
+          if (isMusicPlaying) {
+            audio.play();
+          }
+        });
+
+        // 오디오 로드 에러 처리
+        audio.addEventListener('error', (e) => {
+          console.error('Audio error:', e);
+          document.getElementById("musicTime").textContent = "음악 로드 실패";
+          document.getElementById("musicButton").textContent = "🔇 오류";
+        });
+      }
+    }
+
+    // 음악 재생/정지 토글
+    function toggleMusic() {
+      initAudio();
+      const musicButton = document.getElementById("musicButton");
+      
+      if (isMusicPlaying) {
+        audio.pause();
+        musicButton.textContent = "🔈 재생";
+      } else {
+        audio.play().catch(e => {
+          console.error('Playback failed:', e);
+          musicButton.textContent = "🔇 오류";
+          return;
+        });
+        musicButton.textContent = "⏸️ 정지";
+      }
+      isMusicPlaying = !isMusicPlaying;
+    }
+
+    // QR 모달 표시/숨김
+    function toggleQRModal() {
+      const isVisible = qrModal.style.display === "block";
+      qrModal.style.display = isVisible ? "none" : "block";
+    }
+
+    // 구글 슬라이드 열기
+    function openGoogleSlide() {
+      window.open(GOOGLE_SLIDE_URL, '_blank');
+    }
+    
+    // 테마 변경 함수
+    function changeTheme(index) {
+      const theme = colorThemes[index];
+      document.body.style.backgroundColor = theme.bg;
+      document.body.style.color = theme.text;
+      themeButton.textContent = `테마: ${theme.name}`;
+    }
+
+    // 다음 테마로 변경
+    function nextTheme() {
+      currentThemeIndex = (currentThemeIndex + 1) % colorThemes.length;
+      changeTheme(currentThemeIndex);
+    }
+
+    // 자동 테마 변경
+    function startThemeChange() {
+      return setInterval(() => {
+        nextTheme();
+      }, 30000); // 30초마다 테마 변경
+    }
+
+    // 슬라이드 표시 함수
+    function showSlide(index) {
+      displayElement.textContent = slides[index];
+      optimizeFontSize();
+    }
+    
+    // 다음 슬라이드로 전환
+    function nextSlide() {
+      currentIndex = (currentIndex + 1) % slides.length;
+      showSlide(currentIndex);
+    }
+    
+    // 전체화면 토글 함수
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          document.body.classList.add('hide-controls');
+          fullscreenButton.textContent = "전체화면 종료";
+        });
+      } else {
+        document.exitFullscreen().then(() => {
+          document.body.classList.remove('hide-controls');
+          fullscreenButton.textContent = "전체화면";
+        });
+      }
+      setTimeout(optimizeFontSize, 100);
+    }
+    
+    // 화면 크기 변경 시 글자 크기 최적화
+    function optimizeFontSize() {
+      const slide = document.getElementById('slide');
+      const contentLength = slide.textContent.length;
+      
+      if (contentLength > 100) {
+        slide.style.fontSize = 'clamp(1rem, 4vw, 3rem)';
+      } else if (contentLength > 50) {
+        slide.style.fontSize = 'clamp(1.2rem, 4.5vw, 3.5rem)';
+      } else {
+        slide.style.fontSize = 'clamp(1.5rem, 5vw, 4rem)';
+      }
+    }
+
+    // 초기 설정
+    showSlide(currentIndex);
+    changeTheme(currentThemeIndex);
+    intervalId = setInterval(nextSlide, 10000);
+    const themeIntervalId = startThemeChange();
+    
+    // 광고 순환 추가
+    rotateAd();
+    setInterval(rotateAd, 5000); // 5초마다 광고 변경
+
+    // 이벤트 리스너 추가
+    fullscreenButton.addEventListener("click", toggleFullScreen);
+    themeButton.addEventListener("click", nextTheme);
+    googleSlideButton.addEventListener("click", openGoogleSlide);
+    qrButton.addEventListener("click", toggleQRModal);
+    document.querySelector(".close-btn").addEventListener("click", toggleQRModal);
+    window.addEventListener('resize', optimizeFontSize);
+
+    // 전체화면 변경 이벤트
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        document.body.classList.remove('hide-controls');
+        fullscreenButton.textContent = "전체화면";
+      } else {
+        document.body.classList.add('hide-controls');
+        fullscreenButton.textContent = "전체화면 종료";
+      }
+      setTimeout(optimizeFontSize, 100);
+    });
+
+    // 부모 창에서 오는 메시지 수신
+    window.addEventListener('message', function(event) {
+      if (event.data.type === 'TOGGLE_MUSIC') {
+        if (event.data.playing) {
+          audio.play();
+        } else {
+          audio.pause();
+        }
+        isPlaying = event.data.playing;
+      } else if (event.data.type === 'GET_MUSIC_STATE') {
+        // 현재 음악 상태를 부모 창에 전송
+        window.parent.postMessage({
+          type: 'MUSIC_STATE',
+          playing: isPlaying
+        }, '*');
+      }
+    });
+
+    // 오디오 이벤트 리스너
+    audio.addEventListener('ended', function() {
+      isPlaying = false;
+      window.parent.postMessage({
+        type: 'MUSIC_STATE',
+        playing: false
+      }, '*');
+    });
+  </script>
+</body>
+</html>

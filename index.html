@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>성경 묵상 앱</title>
+    <link rel="icon" type="image/svg+xml" href="/public/logo.svg">
+    <link rel="apple-touch-icon" href="/public/logo.svg">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -630,6 +633,178 @@
           padding: 0.25rem;
         }
       }
+
+      /* 광고 섹션 스타일 */
+      .ad-section-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+      }
+
+      .ad-section-content {
+        position: relative;
+        width: 90%;
+        max-width: 1200px;
+        height: 90vh;
+        margin: 5vh auto;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .ad-section-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .ad-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+      }
+
+      .ad-close-btn:hover {
+        background: white;
+      }
+
+      /* 광고 섹션 컨트롤 스타일 */
+      .ad-controls {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        gap: 10px;
+        z-index: 1;
+      }
+
+      .ad-music-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        color: #4CAF50;
+        transition: all 0.2s ease;
+      }
+
+      .ad-music-btn:hover {
+        background: white;
+        transform: scale(1.05);
+      }
+
+      .ad-music-btn.playing {
+        color: #f44336;
+      }
+
+      /* 네비게이션 스타일 개선 */
+      .nav {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .nav-list {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 1rem;
+        max-width: 1200px;
+        width: 100%;
+        flex-wrap: nowrap;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        color: #333;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        font-size: 0.9rem;
+        min-width: max-content;
+      }
+
+      .nav-link i {
+        margin-right: 6px;
+        font-size: 1rem;
+        width: 16px;
+        text-align: center;
+      }
+
+      .nav-link:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-1px);
+      }
+
+      .nav-link.active {
+        background-color: #e9ecef;
+        color: #2c3e50;
+      }
+
+      /* 광고 링크 스타일 */
+      .nav-link.ad-link {
+        color: #4CAF50;
+        font-weight: 500;
+        background-color: rgba(76, 175, 80, 0.1);
+      }
+
+      .nav-link.ad-link:hover {
+        background-color: rgba(76, 175, 80, 0.2);
+      }
+
+      /* 반응형 네비게이션 */
+      @media (max-width: 768px) {
+        .nav-list {
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 0.5rem;
+        }
+
+        .nav-link {
+          padding: 0.6rem 0.8rem;
+          font-size: 0.85rem;
+        }
+
+        .nav-link i {
+          margin-right: 4px;
+          width: 14px;
+        }
+      }
     </style>
 </head>
 <body>
@@ -645,6 +820,7 @@
             <li><a href="#" class="nav-link" data-view="meditation-prayer"><i class="fas fa-pray"></i> 묵상 기도</a></li>
             <li><a href="#" class="nav-link" data-view="intercessory-prayer"><i class="fas fa-hands"></i> 중보 기도</a></li>
             <li><a href="#" class="nav-link" data-view="search"><i class="fas fa-search"></i> 검색</a></li>
+            <li><a href="#" class="nav-link ad-link" onclick="openAdSection()"><i class="fas fa-bullhorn"></i> 광고</a></li>
         </ul>
     </nav>
 
@@ -720,6 +896,71 @@
         </div>
     </main>
 
+    <!-- 광고 섹션 모달 -->
+    <div id="adSectionModal" class="ad-section-modal">
+        <div class="ad-section-content">
+            <div class="ad-controls">
+                <button class="ad-music-btn" onclick="toggleMusic()">
+                    <i class="fas fa-music"></i>
+                </button>
+                <button class="ad-close-btn" onclick="closeAdSection()">&times;</button>
+            </div>
+            <iframe id="adIframe" class="ad-section-iframe" src="prayer_landingpage.html" allow="autoplay" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script>
+        let isMusicPlaying = false;
+
+        function toggleMusic() {
+            const musicBtn = document.querySelector('.ad-music-btn');
+            const adIframe = document.getElementById('adIframe');
+            
+            isMusicPlaying = !isMusicPlaying;
+            musicBtn.classList.toggle('playing', isMusicPlaying);
+            
+            // iframe으로 메시지 전송
+            adIframe.contentWindow.postMessage({
+                type: 'TOGGLE_MUSIC',
+                playing: isMusicPlaying
+            }, '*');
+        }
+
+        // iframe에서 오는 메시지 수신
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'MUSIC_STATE') {
+                isMusicPlaying = event.data.playing;
+                document.querySelector('.ad-music-btn').classList.toggle('playing', isMusicPlaying);
+            }
+        });
+
+        function openAdSection() {
+            document.getElementById('adSectionModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            // 광고 섹션이 열릴 때 현재 음악 상태 확인
+            const adIframe = document.getElementById('adIframe');
+            adIframe.contentWindow.postMessage({ type: 'GET_MUSIC_STATE' }, '*');
+        }
+
+        function closeAdSection() {
+            document.getElementById('adSectionModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC 키로 광고 섹션 닫기
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAdSection();
+            }
+        });
+
+        // 모달 외부 클릭시 닫기
+        document.getElementById('adSectionModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAdSection();
+            }
+        });
+    </script>
 </body>
 </html> 

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 성경 묵상 앱</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✝️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .signup-container {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .signup-header h1 {
+            font-size: 2rem;
+            color: #1a73e8;
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        .signup-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-signup {
+            padding: 0.75rem;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-signup:hover {
+            background-color: #1557b0;
+        }
+
+        .btn-login {
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            color: #1a73e8;
+            border: 1px solid #1a73e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background-color: #e8f0fe;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .password-requirements ul {
+            margin: 0.5rem 0 0 1.5rem;
+            padding: 0;
+        }
+
+        .password-requirements li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-header">
+            <h1>✝️ 성경 묵상 다이어리</h1>
+            <p>회원가입하여 묵상을 시작하세요</p>
+        </div>
+
+        <form id="signupForm" class="signup-form">
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" required placeholder="example@email.com">
+                <div class="error-message" id="emailError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" required placeholder="비밀번호를 입력하세요">
+                <div class="password-requirements">
+                    비밀번호 요구사항:
+                    <ul>
+                        <li>최소 8자 이상</li>
+                        <li>영문 대/소문자</li>
+                        <li>숫자 포함</li>
+                        <li>특수문자 포함</li>
+                    </ul>
+                </div>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">비밀번호 확인</label>
+                <input type="password" id="confirmPassword" required placeholder="비밀번호를 다시 입력하세요">
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+
+            <div class="signup-actions">
+                <button type="submit" class="btn-signup">
+                    <i class="fas fa-user-plus"></i> 회원가입
+                </button>
+                <button type="button" class="btn-login" onclick="location.href='login.html'">
+                    <i class="fas fa-sign-in-alt"></i> 이미 계정이 있으신가요? 로그인
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { auth } from './app/auth.js';
+
+        const signupForm = document.getElementById('signupForm');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+        // 비밀번호 유효성 검사 함수
+        function validatePassword(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            const errors = [];
+            if (password.length < minLength) errors.push('비밀번호는 최소 8자 이상이어야 합니다.');
+            if (!hasUpperCase || !hasLowerCase) errors.push('영문 대/소문자를 포함해야 합니다.');
+            if (!hasNumbers) errors.push('숫자를 포함해야 합니다.');
+            if (!hasSpecialChar) errors.push('특수문자를 포함해야 합니다.');
+
+            return errors;
+        }
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 에러 메시지 초기화
+            emailError.style.display = 'none';
+            passwordError.style.display = 'none';
+            confirmPasswordError.style.display = 'none';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // 비밀번호 확인
+            if (password !== confirmPassword) {
+                confirmPasswordError.textContent = '비밀번호가 일치하지 않습니다.';
+                confirmPasswordError.style.display = 'block';
+                return;
+            }
+
+            // 비밀번호 유효성 검사
+            const passwordErrors = validatePassword(password);
+            if (passwordErrors.length > 0) {
+                passwordError.textContent = passwordErrors.join(' ');
+                passwordError.style.display = 'block';
+                return;
+            }
+
+            try {
+                await auth.signUp(email, password);
+                // 회원가입 성공 시 로그인 페이지로 이동
+                alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('회원가입 에러:', error);
+                
+                // 에러 메시지 표시
+                if (error.message.includes('email')) {
+                    emailError.textContent = '이미 사용 중인 이메일입니다.';
+                    emailError.style.display = 'block';
+                } else {
+                    emailError.textContent = '회원가입에 실패했습니다. 다시 시도해주세요.';
+                    emailError.style.display = 'block';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
