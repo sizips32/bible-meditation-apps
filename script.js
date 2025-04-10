@@ -102,10 +102,15 @@ class Calendar {
       const isSunday = dayOfWeek === 0;
       const isSaturday = dayOfWeek === 6;
       
+      // 해당 날짜에 묵상 기록이 있는지 확인
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      const hasMeditation = localStorage.getItem(dateStr) !== null;
+      
       html += `
         <div class="calendar-day ${isToday ? 'today' : ''} ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''}" 
-             data-date="${year}-${month + 1}-${i}">
-          ${i}
+             data-date="${dateStr}">
+          <span class="date-number">${i}</span>
+          ${hasMeditation ? '<span class="meditation-indicator">✏️</span>' : ''}
         </div>`;
     }
 
@@ -128,6 +133,15 @@ class Calendar {
     `;
 
     document.querySelector('.calendar').innerHTML = html;
+
+    // 이벤트 리스너 추가
+    const days = document.querySelectorAll('.calendar-day');
+    days.forEach(day => {
+      day.addEventListener('click', () => {
+        const date = day.dataset.date;
+        showMeditationForm(date);
+      });
+    });
   }
 
   // 이전 달로 이동
@@ -157,11 +171,12 @@ class Calendar {
     // 날짜 선택 이벤트
     document.querySelectorAll('.calendar-day:not(.prev-month-day):not(.next-month-day)').forEach(day => {
       day.addEventListener('click', (e) => {
-        document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-        e.target.classList.add('selected');
-        const date = e.target.dataset.date;
-        this.selectedDate = new Date(date);
-        // 여기에 날짜 선택 시 실행할 콜백 함수를 추가할 수 있습니다.
+        const date = e.currentTarget.dataset.date;
+        if (date) {
+          document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+          e.currentTarget.classList.add('selected');
+          showMeditationForm(date);
+        }
       });
     });
   }
@@ -643,9 +658,112 @@ function deleteMeditation(date) {
 
 // Form Functions
 function showMeditationForm(date) {
-  currentMeditation = null;  // 새로운 묵상 작성 모드
-  document.getElementById('meditationDate').value = date;
-  meditationFormContainer.style.display = 'flex';
+  const existingMeditation = meditations.find(m => m.date === date) || null;
+  
+  const modal = document.createElement('div');
+  modal.className = 'meditation-modal';
+  modal.innerHTML = `
+    <div class="meditation-form">
+      <div class="meditation-form-header">
+        <h2>묵상 작성</h2>
+        <div class="date-selector">
+          <label for="meditationDate">📅 날짜:</label>
+          <input type="date" id="meditationDate" value="${date}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bibleReference">📖 성경 구절</label>
+        <input type="text" id="bibleReference" placeholder="예: 요한복음 3:16" 
+               value="${existingMeditation ? existingMeditation.bibleReference || '' : ''}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="title">✏️ 제목</label>
+        <input type="text" id="title" placeholder="오늘의 묵상 제목을 입력하세요" 
+               value="${existingMeditation ? existingMeditation.title || '' : ''}" required>
+      </div>
+
+      <div class="meditation-sections">
+        <div class="meditation-section">
+          <h3>📝 Capture (포착하기)</h3>
+          <p class="section-desc">말씀을 읽으며 마음에 와닿는 구절이나 단어를 포착합니다.</p>
+          <textarea id="capture" placeholder="마음에 와닿는 말씀을 적어주세요...">${existingMeditation ? existingMeditation.capture || '' : ''}</textarea>
+        </div>
+
+        <div class="meditation-section">
+          <h3>🔍 Organize (조직화하기)</h3>
+          <p class="section-desc">포착한 말씀의 문맥을 살피고, 관련 구절들을 연결하여 의미를 정리합니다.</p>
+          <textarea id="organize" placeholder="말씀의 의미와 문맥을 정리해보세요...">${existingMeditation ? existingMeditation.organize || '' : ''}</textarea>
+        </div>
+
+        <div class="meditation-section">
+          <h3>💡 Distill (압축하기)</h3>
+          <p class="section-desc">말씀을 통해 깨달은 핵심 진리를 한 문장으로 정리합니다.</p>
+          <textarea id="distill" placeholder="깨달은 핵심 진리를 정리해보세요...">${existingMeditation ? existingMeditation.distill || '' : ''}</textarea>
+        </div>
+
+        <div class="meditation-section">
+          <h3>🙏 Express (표현하기)</h3>
+          <p class="section-desc">깨달은 진리를 기도로 표현하고, 구체적인 적용점을 찾습니다.</p>
+          <textarea id="express" placeholder="기도와 적용점을 작성해보세요...">${existingMeditation ? existingMeditation.express || '' : ''}</textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-save" onclick="saveMeditation()">
+          💾 저장하기
+        </button>
+        <button type="button" class="btn-cancel">
+          ❌ 취소하기
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // 이벤트 리스너 등록
+  const saveBtn = modal.querySelector('.btn-save');
+  const cancelBtn = modal.querySelector('.btn-cancel');
+  const dateInput = modal.querySelector('#meditationDate');
+
+  // 저장 버튼 클릭 이벤트
+  saveBtn.addEventListener('click', () => {
+    const meditationData = {
+      date: dateInput.value,
+      bibleReference: document.getElementById('bibleReference').value,
+      title: document.getElementById('title').value,
+      capture: document.getElementById('capture').value,
+      organize: document.getElementById('organize').value,
+      distill: document.getElementById('distill').value,
+      express: document.getElementById('express').value
+    };
+
+    // 기존 묵상이 있으면 업데이트, 없으면 새로 추가
+    const index = meditations.findIndex(m => m.date === meditationData.date);
+    if (index !== -1) {
+      meditations[index] = meditationData;
+    } else {
+      meditations.push(meditationData);
+    }
+
+    saveMeditationsToStorage(meditations);
+    modal.remove();
+    calendar.render(); // 달력 다시 렌더링
+  });
+
+  // 취소 버튼 클릭 이벤트
+  cancelBtn.addEventListener('click', () => {
+    modal.remove();
+  });
+
+  // 모달 외부 클릭시 닫기
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 }
 
 function closeMeditationForm() {
