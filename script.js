@@ -236,9 +236,6 @@ function showHomeView() {
   currentView = 'home';
   meditationContainer.innerHTML = `
     <div class="home-container">
-      <div class="server-notice">
-        <p>🔔 서버가 포트 7780에서 실행 중입니다. <strong>http://localhost:7780</strong>로 접속하세요.</p>
-      </div>
       <div class="welcome-section">
         <h2>📖 성경 CODE 묵상법</h2>
         <p class="welcome-text">
