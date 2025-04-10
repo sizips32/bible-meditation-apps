@@ -5,6 +5,7 @@ const currentMonthElement = document.getElementById('current-month');
 const meditationFormContainer = document.querySelector('.meditation-form-container');
 const meditationForm = document.getElementById('meditationForm');
 const navLinks = document.querySelectorAll('.nav-link');
+const meditationModal = document.querySelector('.meditation-modal');
 
 // State
 let currentDate = new Date();
@@ -224,6 +225,12 @@ document.addEventListener('DOMContentLoaded', () => {
       link.classList.add('active');
     });
   });
+
+  // 폼 제출 이벤트 리스너 등록
+  meditationForm.addEventListener('submit', handleSubmit);
+  
+  // 닫기 버튼 이벤트 리스너 등록
+  document.querySelector('.btn-close').addEventListener('click', closeMeditationForm);
 });
 
 // 페이지 새로고침/언로드 시 모달 제거
@@ -702,99 +709,33 @@ function deleteMeditation(date) {
 
 // Form Functions
 function showMeditationForm(date = null, bookName = null) {
-  // 기존 모달이 있다면 제거
-  closeMeditationForm();
+  meditationModal.style.display = 'flex';
   
-  const modal = document.createElement('div');
-  modal.className = 'meditation-modal';
-  modal.innerHTML = `
-    <div class="meditation-form">
-      <div class="meditation-form-header">
-        <h2>✏️ CODE 묵상 작성</h2>
-        <div class="date-selector">
-          <label for="meditationDate">📅 날짜:</label>
-          <input type="date" id="meditationDate" value="${date || new Date().toISOString().split('T')[0]}" required>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="bibleReference">📖 성경 구절</label>
-        <input type="text" id="bibleReference" placeholder="예: 요한복음 3:16" value="${bookName ? bookName + ' ' : ''}" required>
-      </div>
-
-      <div class="form-group">
-        <label for="title">✨ 제목</label>
-        <input type="text" id="title" placeholder="오늘의 묵상 제목을 입력하세요" required>
-      </div>
-
-      <div class="meditation-sections">
-        <div class="meditation-section">
-          <h3>📝 Capture (포착하기)</h3>
-          <p class="section-desc">말씀을 처음 읽었을 때 마음에 와닿는 부분이나 특별히 눈에 띄는 단어, 구절을 적어보세요.</p>
-          <textarea id="capture" required></textarea>
-        </div>
-
-        <div class="meditation-section">
-          <h3>🔍 Organize (조직화하기)</h3>
-          <p class="section-desc">말씀의 배경, 문맥, 구조를 파악하고 정리해보세요.</p>
-          <textarea id="organize" required></textarea>
-        </div>
-
-        <div class="meditation-section">
-          <h3>💡 Distill (압축하기)</h3>
-          <p class="section-desc">말씀을 통해 전달하고자 하는 핵심 메시지가 무엇인지 정리해보세요.</p>
-          <textarea id="distill" required></textarea>
-        </div>
-
-        <div class="meditation-section">
-          <h3>🙏 Express (표현하기)</h3>
-          <p class="section-desc">말씀을 통해 깨달은 것을 실천하기 위한 구체적인 계획과 결단을 적어보세요.</p>
-          <textarea id="express" required></textarea>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn-save" onclick="saveMeditation()">
-          <i class="fas fa-save"></i> 저장하기
-        </button>
-        <button type="button" class="btn-cancel" onclick="closeMeditationForm()">
-          <i class="fas fa-times"></i> 취소하기
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // 이벤트 리스너 등록
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeMeditationForm();
+  if (date) {
+    document.getElementById('meditationDate').value = date;
+    
+    // 기존 데이터 불러오기
+    const meditations = loadMeditations();
+    const existingMeditation = meditations.find(m => m.date === date);
+    
+    if (existingMeditation) {
+      document.getElementById('bibleReference').value = existingMeditation.bibleReference || '';
+      document.getElementById('title').value = existingMeditation.title || '';
+      document.getElementById('capture').value = existingMeditation.capture || '';
+      document.getElementById('organize').value = existingMeditation.organize || '';
+      document.getElementById('distill').value = existingMeditation.distill || '';
+      document.getElementById('express').value = existingMeditation.express || '';
     }
-  });
-
-  // 수정 모드인 경우 기존 데이터 채우기
-  if (currentMeditation) {
-    document.getElementById('meditationDate').value = currentMeditation.date;
-    document.getElementById('bibleReference').value = currentMeditation.bibleReference;
-    document.getElementById('title').value = currentMeditation.title;
-    document.getElementById('capture').value = currentMeditation.capture;
-    document.getElementById('organize').value = currentMeditation.organize;
-    document.getElementById('distill').value = currentMeditation.distill;
-    document.getElementById('express').value = currentMeditation.express;
   }
 }
 
 // 명상 폼 닫기
 function closeMeditationForm() {
-  const modal = document.querySelector('.meditation-modal');
-  if (modal) {
-    modal.remove();
-  }
-  currentMeditation = null;
+  meditationModal.style.display = 'none';
+  meditationForm.reset();
 }
 
-// Event Handlers
+// 폼 제출 이벤트 핸들러
 function handleSubmit(event) {
   event.preventDefault();
   
@@ -805,23 +746,43 @@ function handleSubmit(event) {
     capture: document.getElementById('capture').value,
     organize: document.getElementById('organize').value,
     distill: document.getElementById('distill').value,
-    express: document.getElementById('express').value,
+    express: document.getElementById('express').value
   };
 
-  if (currentMeditation) {
-    // 수정 모드
-    const index = meditations.findIndex(m => m.date === formData.date);
-    if (index !== -1) {
-      meditations[index] = formData;
-    }
-  } else {
-    // 새로운 묵상 작성 모드
-    meditations.push(formData);
+  // 데이터 유효성 검사
+  if (!formData.date || !formData.bibleReference || !formData.title) {
+    showNotification('모든 필수 항목을 입력해주세요.', 'error');
+    return;
   }
-  
-  saveMeditationsToStorage();
-  closeMeditationForm();
-  showCalendarView();
+
+  try {
+    // 묵상 데이터 저장
+    meditations = loadMeditations();
+    const meditationIndex = meditations.findIndex(m => m.date === formData.date);
+    
+    if (meditationIndex >= 0) {
+      meditations[meditationIndex] = formData;
+    } else {
+      meditations.push(formData);
+    }
+    
+    saveMeditationsToStorage();
+    
+    // 성공 메시지 표시
+    showNotification('묵상이 성공적으로 저장되었습니다.', 'success');
+    
+    // 폼 초기화 및 닫기
+    closeMeditationForm();
+    
+    // 캘린더 새로고침
+    if (currentView === 'calendar') {
+      const calendarInstance = new Calendar();
+      calendarInstance.render();
+    }
+  } catch (error) {
+    console.error('묵상 저장 중 오류 발생:', error);
+    showNotification('저장 중 오류가 발생했습니다.', 'error');
+  }
 }
 
 function performSearch() {
