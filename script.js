@@ -45,72 +45,132 @@ function saveMeditationPrayers() {
 }
 
 // Calendar Functions
-function generateCalendar(year, month) {
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startingDay = firstDay.getDay();
-  const totalDays = lastDay.getDate();
-  const today = new Date();
-
-  // Update month display
-  const monthYear = firstDay.toLocaleDateString('ko-KR', { 
-    year: 'numeric', 
-    month: 'long'
-  });
-  currentMonthElement.innerHTML = `📅 ${monthYear}`;
-
-  let calendarHTML = `
-    <div class="calendar-header">일</div>
-    <div class="calendar-header">월</div>
-    <div class="calendar-header">화</div>
-    <div class="calendar-header">수</div>
-    <div class="calendar-header">목</div>
-    <div class="calendar-header">금</div>
-    <div class="calendar-header">토</div>
-  `;
-
-  // Add empty cells for days before the first day of the month
-  for (let i = 0; i < startingDay; i++) {
-    calendarHTML += '<div class="calendar-day empty"></div>';
+class Calendar {
+  constructor() {
+    this.currentDate = new Date();
+    this.selectedDate = new Date();
+    this.init();
   }
 
-  // Add days of the month
-  for (let day = 1; day <= totalDays; day++) {
-    const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const hasMeditation = meditations.some(m => m.date === date);
-    const isToday = today.getFullYear() === year && 
-                    today.getMonth() === month && 
-                    today.getDate() === day;
+  init() {
+    this.render();
+    this.attachEventListeners();
+  }
+
+  // 달력 렌더링
+  render() {
+    const year = this.currentDate.getFullYear();
+    const month = this.currentDate.getMonth();
     
-    calendarHTML += `
-      <div class="calendar-day ${hasMeditation ? 'has-meditation' : ''} ${isToday ? 'today' : ''}" 
-           data-date="${date}">
-        <span class="date">${day}</span>
-        ${hasMeditation ? '<span class="meditation-indicator">✏️</span>' : ''}
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const firstDayIndex = firstDay.getDay();
+    const lastDayDate = lastDay.getDate();
+    
+    let html = `
+      <div class="calendar">
+        <div class="calendar-header">
+          <button class="prev-month">&lt;</button>
+          <h2>${year}년 ${month + 1}월</h2>
+          <button class="next-month">&gt;</button>
+        </div>
+        <div class="calendar-days">
+          <div class="day-name sunday">일</div>
+          <div class="day-name">월</div>
+          <div class="day-name">화</div>
+          <div class="day-name">수</div>
+          <div class="day-name">목</div>
+          <div class="day-name">금</div>
+          <div class="day-name saturday">토</div>
+    `;
+
+    // 이전 달의 마지막 날짜들
+    for (let i = firstDayIndex; i > 0; i--) {
+      const prevDate = new Date(year, month, -i + 1);
+      html += `<div class="calendar-day prev-month-day">${prevDate.getDate()}</div>`;
+    }
+
+    // 현재 달의 날짜들
+    for (let i = 1; i <= lastDayDate; i++) {
+      const today = new Date();
+      const isToday = i === today.getDate() && 
+                      month === today.getMonth() && 
+                      year === today.getFullYear();
+      
+      const dayOfWeek = new Date(year, month, i).getDay();
+      const isSunday = dayOfWeek === 0;
+      const isSaturday = dayOfWeek === 6;
+      
+      html += `
+        <div class="calendar-day ${isToday ? 'today' : ''} ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''}" 
+             data-date="${year}-${month + 1}-${i}">
+          ${i}
+        </div>`;
+    }
+
+    // 다음 달의 시작 날짜들
+    const remainingDays = 42 - (firstDayIndex + lastDayDate);
+    for (let i = 1; i <= remainingDays; i++) {
+      const dayOfWeek = new Date(year, month + 1, i).getDay();
+      const isSunday = dayOfWeek === 0;
+      const isSaturday = dayOfWeek === 6;
+      
+      html += `
+        <div class="calendar-day next-month-day ${isSunday ? 'sunday' : ''} ${isSaturday ? 'saturday' : ''}">
+          ${i}
+        </div>`;
+    }
+
+    html += `
+        </div>
       </div>
     `;
+
+    document.querySelector('.calendar').innerHTML = html;
   }
 
-  calendar.innerHTML = calendarHTML;
-  addCalendarEventListeners();
-  calendar.style.display = 'grid';
+  // 이전 달로 이동
+  prevMonth() {
+    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+    this.render();
+    this.attachEventListeners();
+  }
+
+  // 다음 달로 이동
+  nextMonth() {
+    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+    this.render();
+    this.attachEventListeners();
+  }
+
+  // 이벤트 리스너 설정
+  attachEventListeners() {
+    document.querySelector('.prev-month').addEventListener('click', () => {
+      this.prevMonth();
+    });
+
+    document.querySelector('.next-month').addEventListener('click', () => {
+      this.nextMonth();
+    });
+
+    // 날짜 선택 이벤트
+    document.querySelectorAll('.calendar-day:not(.prev-month-day):not(.next-month-day)').forEach(day => {
+      day.addEventListener('click', (e) => {
+        document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+        e.target.classList.add('selected');
+        const date = e.target.dataset.date;
+        this.selectedDate = new Date(date);
+        // 여기에 날짜 선택 시 실행할 콜백 함수를 추가할 수 있습니다.
+      });
+    });
+  }
 }
 
-function addCalendarEventListeners() {
-  const days = document.querySelectorAll('.calendar-day:not(.empty)');
-  days.forEach(day => {
-    day.addEventListener('click', () => {
-      const date = day.dataset.date;
-      const meditation = meditations.find(m => m.date === date);
-      
-      if (meditation) {
-        displayMeditation(meditation);
-      } else {
-        showMeditationForm(date);
-      }
-    });
-  });
-}
+// 달력 초기화
+document.addEventListener('DOMContentLoaded', () => {
+  const calendar = new Calendar();
+});
 
 // Navigation Functions
 function showHomeView() {
