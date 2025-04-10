@@ -1716,4 +1716,112 @@ body {
 
 .cancel-btn:hover {
   background-color: #da190b;
+}
+
+/* 성경 목록 스타일 */
+.bible-list-section {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bible-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.bible-item {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bible-item:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+/* 묵상 기록 목록 스타일 */
+.meditation-list-section {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.meditation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.meditation-item {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}
+
+.meditation-item h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+}
+
+.meditation-item p {
+  margin: 0;
+  color: #666;
+}
+
+.no-meditation-message {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .bible-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* 새로운 묵상 작성하기 버튼 컨테이너 */
+.new-meditation-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin: 2rem 0;
+}
+
+.btn-new-meditation {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-new-meditation:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-new-meditation i {
+  font-size: 1.1rem;
 } 
