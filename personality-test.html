@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12지파 성격 유형 테스트</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    .test-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .question-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .result-section {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .swot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .swot-box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .tribe-description {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #e9ecef;
+      border-radius: 5px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #4CAF50;
+      transition: width 0.3s ease;
+    }
+    .chart-container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+    .mission-analysis {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+    .question-number {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      color: #6c757d;
+    }
+    #swot-image {
+      width: 100%;
+      margin-top: 20px;
+      text-align: center;
+    }
+    #swot-image canvas {
+      max-width: 100%;
+      height: auto;
+    }
+    .btn-restart {
+      margin-top: 20px;
+    }
+    .answers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+      .answers-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">성경 묵상 앱</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">홈</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="personality-test.html">12지파 성격 테스트</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="test-section">
+      <h1 class="text-center mb-4">12지파 성격 유형 테스트</h1>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%"></div>
+      </div>
+      <div id="test-form">
+        <!-- 질문들은 JavaScript로 동적 생성됩니다 -->
+      </div>
+
+      <div id="result" class="result-section">
+        <h2 class="text-center mb-4">당신의 12지파 성격 유형은...</h2>
+        <div id="tribe-result" class="tribe-description"></div>
+        
+        <div class="chart-container">
+          <canvas id="tribeChart"></canvas>
+        </div>
+
+        <div class="swot-grid">
+          <div class="swot-box">
+            <h4>강점 (Strengths)</h4>
+            <p id="strengths"></p>
+          </div>
+          <div class="swot-box">
+            <h4>약점 (Weaknesses)</h4>
+            <p id="weaknesses"></p>
+          </div>
+          <div class="swot-box">
+            <h4>기회 (Opportunities)</h4>
+            <p id="opportunities"></p>
+          </div>
+          <div class="swot-box">
+            <h4>위협 (Threats)</h4>
+            <p id="threats"></p>
+          </div>
+        </div>
+
+        <div id="swot-image"></div>
+
+        <div class="mission-analysis">
+          <h3>선교사적 분석</h3>
+          <div id="mission-result"></div>
+        </div>
+        
+        <div class="text-center mt-4">
+          <button class="btn btn-primary" onclick="downloadResult()">결과 이미지 다운로드</button>
+          <button class="btn btn-secondary ms-2" onclick="resetTest()">다시 테스트하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    const tribeData = {
+      reuben: {
+        name: "르우벤 지파",
+        description: "영적 리더십과 섬김의 은사를 가진 선교사",
+        strengths: "깊은 영성, 리더십 능력, 섬김의 마음, 공동체 의식",
+        weaknesses: "때로는 감정적 결정, 과도한 책임감",
+        opportunities: "영적 지도자 양성, 교회 개척, 제자 양육",
+        threats: "번아웃, 과도한 기대에 대한 부담",
+        missionAnalysis: "영적 리더십을 통한 현지 교회 성장과 제자 양육에 탁월한 은사가 있습니다. 특히 교회 개척과 리더 양성에 주력하면 좋습니다.",
+        biblicalFigure: "르우벤",
+        biblicalReference: "네가 물의 쏟아짐 같았은즉 위대하지 못하리니 네가 아버지의 침상에 올라 더럽혔음이로다 (창세기 49:4)",
+        characteristics: "장자로서의 책임감과 리더십, 감정적 결정의 위험성을 인식하는 신중함이 필요한 사역자"
+      },
+      simeon: {
+        name: "시므온 지파",
+        description: "열정적인 복음 전도자",
+        strengths: "열정적인 전도, 강한 의지력, 명확한 비전",
+        weaknesses: "때로는 성급함, 융통성 부족",
+        opportunities: "개척 선교, 전도 운동 주도",
+        threats: "문화적 충돌, 현지인들과의 갈등",
+        missionAnalysis: "복음 전파에 대한 뜨거운 열정으로 새로운 지역 개척에 적합합니다. 문화적 민감성을 기르면 더욱 효과적일 것입니다.",
+        biblicalFigure: "시므온",
+        biblicalReference: "시므온과 레위는 형제요 그들의 칼은 폭력의 도구로다 (창세기 49:5)",
+        characteristics: "정의감이 강하며 열정적이나, 분노 조절과 지혜로운 판단이 필요한 사역자"
+      },
+      levi: {
+        name: "레위 지파",
+        description: "예배와 교육 중심의 선교사",
+        strengths: "예배 인도력, 교육 능력, 영적 분별력",
+        weaknesses: "때로는 완벽주의적 성향",
+        opportunities: "예배 사역 개발, 신학 교육",
+        threats: "현지 문화와의 괴리",
+        missionAnalysis: "예배와 교육을 통한 현지 교회 성장에 탁월한 은사가 있습니다. 특히 신학교육과 예배 사역 개발이 강점입니다.",
+        biblicalFigure: "모세, 아론",
+        biblicalReference: "레위에 대하여는 이르되 주의 둠밈과 우림이 주의 경건한 자에게 있도다 (신명기 33:8)",
+        characteristics: "하나님께 구별된 제사장적 사명을 가진 영적 지도자"
+      },
+      judah: {
+        name: "유다 지파",
+        description: "문화 선교의 리더",
+        strengths: "창의성, 예술적 감각, 리더십",
+        weaknesses: "때로는 즉흥적 결정",
+        opportunities: "문화 사역, 예술 선교",
+        threats: "자원 부족, 지속성 유지",
+        missionAnalysis: "문화와 예술을 통한 선교에 특별한 은사가 있습니다. 창의적인 방법으로 복음을 전할 수 있습니다.",
+        biblicalFigure: "다윗",
+        biblicalReference: "유다는 사자 새끼로다 내 아들아 너는 움킨 것을 찢고 올라갔도다 (창세기 49:9)",
+        characteristics: "왕적인 리더십과 예배자의 마음을 가진 문화 선교사"
+      },
+      dan: {
+        name: "단 지파",
+        description: "전략적 분별가",
+        strengths: "전략적 사고, 분별력, 정의감",
+        weaknesses: "때로는 의심이 많음, 독립적 성향",
+        opportunities: "선교 전략 개발, 보안 선교",
+        threats: "영적 공격, 고립",
+        missionAnalysis: "전략적 사고와 분별력으로 특수한 선교 상황에서 효과적으로 사역할 수 있습니다.",
+        biblicalFigure: "삼손",
+        biblicalReference: "단은 이스라엘의 한 지파같이 그의 백성을 심판하리로다 (창세기 49:16)",
+        characteristics: "분별력 있는 판단으로 전략적 선교를 수행하는 사역자"
+      },
+      naphtali: {
+        name: "납달리 지파",
+        description: "자유로운 소통가",
+        strengths: "적응력, 소통능력, 자유로운 사고",
+        weaknesses: "때로는 우유부단함",
+        opportunities: "창의적 선교, 문화간 소통",
+        threats: "방향성 상실, 집중력 부족",
+        missionAnalysis: "뛰어난 적응력과 소통능력으로 다문화 환경에서 효과적으로 사역할 수 있습니다.",
+        biblicalFigure: "바락",
+        biblicalReference: "납달리는 놓인 암사슴이라 아름다운 말을 하는도다 (창세기 49:21)",
+        characteristics: "자유로운 영성과 탁월한 소통능력을 가진 문화 소통가"
+      },
+      gad: {
+        name: "갓 지파",
+        description: "용맹한 개척자",
+        strengths: "용기, 결단력, 전투적 영성",
+        weaknesses: "때로는 과격함",
+        opportunities: "개척 선교, 영적 전쟁",
+        threats: "영적 피로, 대립",
+        missionAnalysis: "강인한 영성과 개척 정신으로 어려운 선교지에서 효과적으로 사역할 수 있습니다.",
+        biblicalFigure: "여호수아",
+        biblicalReference: "갓은 군대의 압박을 받으나 도리어 그 뒤를 추격하리로다 (창세기 49:19)",
+        characteristics: "영적 전사로서 개척 선교사의 자질을 가진 사역자"
+      },
+      asher: {
+        name: "아셀 지파",
+        description: "풍성한 섬김의 사역자",
+        strengths: "섬김의 은사, 풍성한 자원, 관대함",
+        weaknesses: "때로는 현실 안주",
+        opportunities: "구제 선교, 복지 사역",
+        threats: "영적 나태함",
+        missionAnalysis: "풍성한 섬김과 나눔의 은사로 실제적인 필요를 채우는 사역을 할 수 있습니다.",
+        biblicalFigure: "드보라",
+        biblicalReference: "아셀에게서 나는 식물은 기름진 것이라 그가 왕의 진수를 공급하리로다 (창세기 49:20)",
+        characteristics: "풍성한 섬김과 나눔의 은사로 실제적 필요를 채우는 사역자"
+      },
+      issachar: {
+        name: "잇사갈 지파",
+        description: "전략적 선교 기획자",
+        strengths: "분석력, 전략적 사고, 체계적 접근",
+        weaknesses: "때로는 과도한 계획 중심",
+        opportunities: "선교 전략 개발, 연구 사역",
+        threats: "유연성 부족",
+        missionAnalysis: "선교 전략 수립과 실행에 탁월한 능력이 있습니다. 체계적인 접근으로 장기적 성과를 낼 수 있습니다.",
+        biblicalFigure: "톨라",
+        biblicalReference: "잇사갈은 강한 나귀로서 양의 우리 사이에 꿇어앉았도다 (창세기 49:14)",
+        characteristics: "시대를 분별하고 전략적으로 사역을 수행하는 지혜로운 사역자"
+      },
+      zebulun: {
+        name: "스불론 지파",
+        description: "관계 중심의 선교사",
+        strengths: "소통 능력, 관계 형성력, 문화 적응력",
+        weaknesses: "때로는 우유부단함",
+        opportunities: "관계 선교, 네트워크 구축",
+        threats: "깊이 있는 사역 부족",
+        missionAnalysis: "관계 형성과 네트워크 구축에 탁월한 은사가 있습니다. 현지인들과의 깊은 관계를 통한 선교가 강점입니다.",
+        biblicalFigure: "엘론",
+        biblicalReference: "스불론은 해변에 거주하리니 그곳은 배 매는 해변이라 (창세기 49:13)",
+        characteristics: "다양한 문화와 소통하며 관계를 통해 선교하는 사역자"
+      },
+      benjamin: {
+        name: "베냐민 지파",
+        description: "열정적인 복음 전파자",
+        strengths: "열정, 용기, 적응력",
+        weaknesses: "때로는 충동적",
+        opportunities: "개척 선교, 긴급 선교",
+        threats: "안전 위험, 소진",
+        missionAnalysis: "뜨거운 열정과 용기로 어려운 선교지에서도 효과적으로 사역할 수 있습니다.",
+        biblicalFigure: "사도 바울",
+        biblicalReference: "베냐민은 물어뜯는 이리라 아침에는 빼앗은 것을 먹고 저녁에는 움킨 것을 나누리로다 (창세기 49:27)",
+        characteristics: "열정적이고 용감한 복음 전파자로서의 사명을 가진 사역자"
+      },
+      manasseh: {
+        name: "므낫세 지파",
+        description: "회복과 치유의 사역자",
+        strengths: "치유의 은사, 회복력, 포용력",
+        weaknesses: "때로는 과거 지향적",
+        opportunities: "치유 사역, 회복 사역",
+        threats: "정체성 혼란",
+        missionAnalysis: "치유와 회복의 은사로 상처 입은 영혼들을 돌보는 사역을 할 수 있습니다.",
+        biblicalFigure: "기드온",
+        biblicalReference: "요셉은 결실한 가지라 샘 곁의 결실한 가지라 (창세기 49:22)",
+        characteristics: "치유와 회복의 은사로 상처 입은 이들을 돌보는 사역자"
+      }
+    };
+
+    const questions = [
+      {
+        question: "선교지에서 가장 중요하게 생각하는 것은?",
+        answers: [
+          { tribe: "levi", text: "예배와 영성 훈련" },
+          { tribe: "dan", text: "분별력 있는 판단" },
+          { tribe: "judah", text: "문화적 영향력" },
+          { tribe: "issachar", text: "전략적 접근" }
+        ]
+      },
+      {
+        question: "어려운 상황에서 나는...",
+        answers: [
+          { tribe: "gad", text: "용감하게 맞서 싸운다" },
+          { tribe: "naphtali", text: "유연하게 대처한다" },
+          { tribe: "benjamin", text: "열정적으로 도전한다" },
+          { tribe: "reuben", text: "신중하게 판단한다" }
+        ]
+      },
+      {
+        question: "선교 사역에서 나의 강점은?",
+        answers: [
+          { tribe: "benjamin", text: "열정적인 복음 전파" },
+          { tribe: "asher", text: "풍성한 섬김과 나눔" },
+          { tribe: "zebulun", text: "관계 형성과 소통" },
+          { tribe: "manasseh", text: "치유와 회복" }
+        ]
+      },
+      {
+        question: "문화 적응에서 나는...",
+        answers: [
+          { tribe: "zebulun", text: "현지 문화를 즐기며 배운다" },
+          { tribe: "manasseh", text: "치유와 회복에 집중한다" },
+          { tribe: "issachar", text: "체계적으로 분석한다" },
+          { tribe: "naphtali", text: "자유롭게 소통한다" }
+        ]
+      },
+      {
+        question: "선교 전략을 세울 때...",
+        answers: [
+          { tribe: "issachar", text: "시대를 분별하고 전략을 세운다" },
+          { tribe: "judah", text: "창의적인 방법을 찾는다" },
+          { tribe: "dan", text: "신중하게 분석한다" },
+          { tribe: "reuben", text: "책임감 있게 계획한다" }
+        ]
+      },
+      {
+        question: "팀 사역에서 나는...",
+        answers: [
+          { tribe: "reuben", text: "책임감 있게 이끈다" },
+          { tribe: "simeon", text: "정의롭게 행동한다" },
+          { tribe: "levi", text: "영적으로 섬긴다" },
+          { tribe: "zebulun", text: "관계를 중시한다" }
+        ]
+      },
+      {
+        question: "현지 교회와의 관계에서...",
+        answers: [
+          { tribe: "levi", text: "예배와 교육을 담당한다" },
+          { tribe: "dan", text: "전략적으로 판단하고 조언한다" },
+          { tribe: "zebulun", text: "깊은 관계를 형성한다" },
+          { tribe: "asher", text: "실제적인 필요를 채운다" }
+        ]
+      },
+      {
+        question: "선교 사역의 목표는...",
+        answers: [
+          { tribe: "judah", text: "문화적 변화와 영향력" },
+          { tribe: "benjamin", text: "복음의 확장" },
+          { tribe: "issachar", text: "체계적인 제자양육" },
+          { tribe: "manasseh", text: "영적 치유와 회복" }
+        ]
+      },
+      {
+        question: "어려운 결정을 내릴 때...",
+        answers: [
+          { tribe: "reuben", text: "신중하게 판단한다" },
+          { tribe: "gad", text: "과감하게 결정한다" },
+          { tribe: "dan", text: "분별력있게 분석한다" },
+          { tribe: "naphtali", text: "유연하게 접근한다" }
+        ]
+      },
+      {
+        question: "선교지의 필요를 파악할 때...",
+        answers: [
+          { tribe: "issachar", text: "체계적인 조사와 분석" },
+          { tribe: "asher", text: "실제적인 필요 파악" },
+          { tribe: "zebulun", text: "관계를 통한 이해" },
+          { tribe: "dan", text: "전략적인 관찰" }
+        ]
+      },
+      {
+        question: "현지인 훈련에서 중점을 두는 것은...",
+        answers: [
+          { tribe: "levi", text: "영적 훈련과 예배" },
+          { tribe: "manasseh", text: "회복과 치유" },
+          { tribe: "judah", text: "리더십 개발" },
+          { tribe: "issachar", text: "체계적인 교육" }
+        ]
+      },
+      {
+        question: "갈등 상황에서 나는...",
+        answers: [
+          { tribe: "zebulun", text: "관계 회복에 집중한다" },
+          { tribe: "naphtali", text: "유연하게 소통한다" },
+          { tribe: "reuben", text: "책임감 있게 중재한다" },
+          { tribe: "dan", text: "공정하게 판단한다" }
+        ]
+      },
+      {
+        question: "선교 자원 활용에서...",
+        answers: [
+          { tribe: "issachar", text: "전략적 계획과 실행" },
+          { tribe: "asher", text: "풍성한 나눔과 공급" },
+          { tribe: "reuben", text: "책임감 있는 관리" },
+          { tribe: "manasseh", text: "필요 중심적 분배" }
+        ]
+      },
+      {
+        question: "현지 문화 이해에서...",
+        answers: [
+          { tribe: "judah", text: "문화적 가치 발견" },
+          { tribe: "dan", text: "분별력 있는 수용" },
+          { tribe: "zebulun", text: "적극적인 참여" },
+          { tribe: "issachar", text: "체계적인 연구" }
+        ]
+      },
+      {
+        question: "선교 비전을 세울 때...",
+        answers: [
+          { tribe: "reuben", text: "책임감 있는 계획" },
+          { tribe: "benjamin", text: "열정적인 도전" },
+          { tribe: "issachar", text: "전략적인 접근" },
+          { tribe: "judah", text: "창의적인 비전" }
+        ]
+      },
+      {
+        question: "사역 평가에서 중요하게 보는 것은...",
+        answers: [
+          { tribe: "issachar", text: "전략적 성과" },
+          { tribe: "simeon", text: "영적 영향력" },
+          { tribe: "dan", text: "객관적 분석" },
+          { tribe: "zebulun", text: "관계적 성장" }
+        ]
+      },
+      {
+        question: "현지 리더 양성에서...",
+        answers: [
+          { tribe: "levi", text: "영적 지도력 훈련" },
+          { tribe: "gad", text: "용기있는 결단력" },
+          { tribe: "judah", text: "창의적 리더십" },
+          { tribe: "reuben", text: "책임감 있는 멘토링" }
+        ]
+      },
+      {
+        question: "선교 전략 수립 시...",
+        answers: [
+          { tribe: "dan", text: "분별력 있는 판단" },
+          { tribe: "naphtali", text: "자유로운 소통" },
+          { tribe: "issachar", text: "체계적인 계획" },
+          { tribe: "judah", text: "혁신적인 접근" }
+        ]
+      },
+      {
+        question: "현지인과의 소통에서...",
+        answers: [
+          { tribe: "zebulun", text: "관계 중심적 접근" },
+          { tribe: "manasseh", text: "치유적 관점" },
+          { tribe: "naphtali", text: "유연한 적응" },
+          { tribe: "asher", text: "섬김의 자세" }
+        ]
+      },
+      {
+        question: "사역의 우선순위는...",
+        answers: [
+          { tribe: "benjamin", text: "복음 전파" },
+          { tribe: "asher", text: "실제적 섬김" },
+          { tribe: "levi", text: "예배와 기도" },
+          { tribe: "manasseh", text: "치유와 회복" }
+        ]
+      },
+      {
+        question: "선교 현장의 변화에...",
+        answers: [
+          { tribe: "gad", text: "용기있게 대처" },
+          { tribe: "simeon", text: "정의롭게 대응" },
+          { tribe: "naphtali", text: "유연하게 적응" },
+          { tribe: "dan", text: "전략적으로 판단" }
+        ]
+      },
+      {
+        question: "동역자와의 관계에서...",
+        answers: [
+          { tribe: "reuben", text: "책임감 있는 리더십" },
+          { tribe: "naphtali", text: "자유로운 협력" },
+          { tribe: "zebulun", text: "관계 중심적 협력" },
+          { tribe: "asher", text: "섬김의 리더십" }
+        ]
+      },
+      {
+        question: "선교 사역의 성공이란...",
+        answers: [
+          { tribe: "judah", text: "문화적 변혁" },
+          { tribe: "manasseh", text: "영적 회복" },
+          { tribe: "benjamin", text: "복음의 확장" },
+          { tribe: "levi", text: "예배의 부흥" }
+        ]
+      },
+      {
+        question: "장기 선교의 핵심은...",
+        answers: [
+          { tribe: "dan", text: "전략적 접근" },
+          { tribe: "simeon", text: "열정적 헌신" },
+          { tribe: "issachar", text: "시대 분별력" },
+          { tribe: "reuben", text: "책임감 있는 지속" }
+        ]
+      }
+    ];
+
+    let currentQuestion = 0;
+    const answers = {};
+
+    function showQuestion() {
+      const testForm = document.getElementById('test-form');
+      const question = questions[currentQuestion];
+      
+      testForm.innerHTML = `
+        <div class="question-card">
+          <span class="question-number">${currentQuestion + 1} / ${questions.length}</span>
+          <h3>${question.question}</h3>
+          <div class="answers-grid">
+            ${question.answers.map((answer, idx) => `
+              <div class="form-check mt-3">
+                <input class="form-check-input" type="radio" name="q${currentQuestion}" value="${answer.tribe}" id="q${currentQuestion}a${idx}">
+                <label class="form-check-label" for="q${currentQuestion}a${idx}">
+                  ${answer.text}
+                </label>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+          ${currentQuestion > 0 ? 
+            `<button class="btn btn-secondary" onclick="previousQuestion()">이전</button>` : 
+            `<div></div>`
+          }
+          ${currentQuestion < questions.length - 1 ? 
+            `<button class="btn btn-primary" onclick="nextQuestion()">다음</button>` :
+            `<button class="btn btn-success" onclick="calculateResult()">결과 보기</button>`
+          }
+        </div>
+      `;
+
+      updateProgressBar();
+    }
+
+    function updateProgressBar() {
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+      document.querySelector('.progress-fill').style.width = `${progress}%`;
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector(`input[name="q${currentQuestion}"]:checked`);
+      if (!selected) {
+        alert('답변을 선택해주세요.');
+        return;
+      }
+      answers[currentQuestion] = selected.value;
+      currentQuestion++;
+      showQuestion();
+    }
+
+    function previousQuestion() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+        // 이전 답변 복원
+        const previousAnswer = answers[currentQuestion];
+        if (previousAnswer) {
+          document.querySelector(`input[value="${previousAnswer}"]`).checked = true;
+        }
+      }
+    }
+
+    function calculateResult() {
+      const selected = document.querySelector(`input[name="q${currentQuestion}"]:checked`);
+      if (!selected) {
+        alert('답변을 선택해주세요.');
+        return;
+      }
+      answers[currentQuestion] = selected.value;
+
+      // 답변 집계
+      const tribeCounts = {};
+      Object.values(answers).forEach(tribe => {
+        tribeCounts[tribe] = (tribeCounts[tribe] || 0) + 1;
+      });
+
+      // 주요 성향 결정
+      const mainTribe = Object.entries(tribeCounts)
+        .sort((a, b) => b[1] - a[1])[0][0];
+
+      displayResult(mainTribe, tribeCounts);
+    }
+
+    function displayResult(mainTribe, tribeCounts) {
+      const tribe = tribeData[mainTribe];
+      document.getElementById('test-form').style.display = 'none';
+      document.getElementById('result').style.display = 'block';
+      
+      document.getElementById('tribe-result').innerHTML = `
+        <h3>${tribe.name}</h3>
+        <p class="lead">${tribe.description}</p>
+        <div class="biblical-reference mt-4">
+          <h4>성경적 근거</h4>
+          <p><strong>대표 인물:</strong> ${tribe.biblicalFigure}</p>
+          <p><strong>성경 구절:</strong> ${tribe.biblicalReference}</p>
+          <p><strong>특성:</strong> ${tribe.characteristics}</p>
+        </div>
+      `;
+      
+      document.getElementById('strengths').textContent = tribe.strengths;
+      document.getElementById('weaknesses').textContent = tribe.weaknesses;
+      document.getElementById('opportunities').textContent = tribe.opportunities;
+      document.getElementById('threats').textContent = tribe.threats;
+      document.getElementById('mission-result').innerHTML = `
+        <p class="lead">${tribe.missionAnalysis}</p>
+      `;
+
+      // 차트 생성
+      const ctx = document.getElementById('tribeChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: Object.keys(tribeCounts).map(key => tribeData[key].name),
+          datasets: [{
+            label: '성향 분석',
+            data: Object.values(tribeCounts),
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            pointBackgroundColor: 'rgba(76, 175, 80, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(76, 175, 80, 1)'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: Math.max(...Object.values(tribeCounts))
+            }
+          }
+        }
+      });
+    }
+
+    function resetTest() {
+      currentQuestion = 0;
+      Object.keys(answers).forEach(key => delete answers[key]);
+      document.getElementById('test-form').style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      showQuestion();
+    }
+
+    // 초기 질문 표시
+    showQuestion();
+
+    function calculateResults() {
+      const answers = [];
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        if (selected) {
+          answers.push(selected.value);
+        }
+      });
+
+      if (answers.length < questions.length) {
+        alert('모든 질문에 답해주세요.');
+        return;
+      }
+
+      const tribeCounts = {};
+      answers.forEach(tribe => {
+        tribeCounts[tribe] = (tribeCounts[tribe] || 0) + 1;
+      });
+
+      let maxCount = 0;
+      let dominantTribe = '';
+      Object.entries(tribeCounts).forEach(([tribe, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          dominantTribe = tribe;
+        }
+      });
+
+      const result = tribeData[dominantTribe];
+      
+      // SWOT 분석 결과 표시
+      document.getElementById('tribe-name').textContent = result.name;
+      document.getElementById('tribe-description').textContent = result.description;
+      document.getElementById('strengths').textContent = result.strengths;
+      document.getElementById('weaknesses').textContent = result.weaknesses;
+      document.getElementById('opportunities').textContent = result.opportunities;
+      document.getElementById('threats').textContent = result.threats;
+      document.getElementById('mission-analysis').textContent = result.missionAnalysis;
+
+      // SWOT 이미지 생성
+      createSWOTImage();
+      
+      // 그래프 생성
+      createCharts(tribeCounts);
+
+      document.querySelector('.test-section').style.display = 'none';
+      document.querySelector('.result-section').style.display = 'block';
+    }
+
+    function createSWOTImage() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+
+      // SWOT 배경 그리기
+      ctx.fillStyle = '#f8f9fa';
+      ctx.fillRect(0, 0, 800, 600);
+
+      // 그리드 그리기
+      ctx.strokeStyle = '#dee2e6';
+      ctx.beginPath();
+      ctx.moveTo(400, 0);
+      ctx.lineTo(400, 600);
+      ctx.moveTo(0, 300);
+      ctx.lineTo(800, 300);
+      ctx.stroke();
+
+      // SWOT 텍스트 스타일
+      ctx.font = 'bold 20px Arial';
+      ctx.fillStyle = '#000';
+
+      // SWOT 제목
+      ctx.fillText('Strengths', 50, 50);
+      ctx.fillText('Weaknesses', 450, 50);
+      ctx.fillText('Opportunities', 50, 350);
+      ctx.fillText('Threats', 450, 350);
+
+      // SWOT 내용
+      ctx.font = '16px Arial';
+      const result = tribeData[document.getElementById('tribe-name').textContent.split(' ')[0].toLowerCase()];
+      wrapText(ctx, result.strengths, 50, 80, 300, 20);
+      wrapText(ctx, result.weaknesses, 450, 80, 300, 20);
+      wrapText(ctx, result.opportunities, 50, 380, 300, 20);
+      wrapText(ctx, result.threats, 450, 380, 300, 20);
+
+      // 이미지를 div에 추가
+      const swotImage = document.getElementById('swot-image');
+      swotImage.innerHTML = '';
+      swotImage.appendChild(canvas);
+    }
+
+    function createCharts(tribeCounts) {
+      const ctx = document.getElementById('tribe-chart').getContext('2d');
+      
+      // 기존 차트 제거
+      if (window.tribeChart) {
+        window.tribeChart.destroy();
+      }
+
+      // 새 차트 생성
+      window.tribeChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: Object.keys(tribeCounts).map(tribe => tribeData[tribe].name),
+          datasets: [{
+            label: '선교사적 성향 분석',
+            data: Object.values(tribeCounts),
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: Math.max(...Object.values(tribeCounts))
+            }
+          },
+          plugins: {
+            legend: {
+              display: true
+            }
+          }
+        }
+      });
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      const questionContainer = document.getElementById('questions');
+      questions.forEach((q, index) => {
+        const questionCard = document.createElement('div');
+        questionCard.className = 'question-card';
+        questionCard.innerHTML = `
+          <h3>질문 ${index + 1}</h3>
+          <p>${q.question}</p>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="q${index}" value="${q.answers[0].tribe}" id="q${index}a1">
+            <label class="form-check-label" for="q${index}a1">${q.answers[0].text}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="q${index}" value="${q.answers[1].tribe}" id="q${index}a2">
+            <label class="form-check-label" for="q${index}a2">${q.answers[1].text}</label>
+          </div>
+        `;
+        questionContainer.appendChild(questionCard);
+      });
+    });
+
+    function downloadResult() {
+      const resultSection = document.getElementById('result');
+      
+      html2canvas(resultSection, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        onclone: function(clonedDoc) {
+          const element = clonedDoc.getElementById('result');
+          element.style.display = 'block';
+          element.style.width = '1200px';
+          element.style.margin = '0 auto';
+          element.style.padding = '40px';
+          element.style.backgroundColor = '#ffffff';
+        }
+      }).then(canvas => {
+        // 결과 이미지 생성
+        const link = document.createElement('a');
+        const tribeName = document.querySelector('#tribe-result h3').textContent;
+        link.download = `12지파-성격유형-${tribeName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html> 
