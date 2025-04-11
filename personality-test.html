@@ -270,6 +270,36 @@
         <h2 class="text-center mb-4">당신의 12지파 성격 유형은...</h2>
         <div id="tribe-result" class="tribe-description"></div>
         
+        <div class="biblical-context mb-4">
+          <h3>성경적 맥락</h3>
+          <div class="alert alert-info">
+            <h4>창세기와 요한계시록의 12지파 변화</h4>
+            <p>성경에서 12지파의 구성은 시대에 따라 변화가 있었습니다:</p>
+            <div class="row">
+              <div class="col-md-6">
+                <h5>창세기의 12지파</h5>
+                <ul class="list-unstyled">
+                  <li>야곱의 12아들을 기준으로 함</li>
+                  <li>단 지파 포함</li>
+                  <li>요셉 지파 존재</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h5>요한계시록의 12지파</h5>
+                <ul class="list-unstyled">
+                  <li>단 지파 제외 (우상숭배 관련)</li>
+                  <li>므낫세 지파 포함</li>
+                  <li>레위 지파 포함</li>
+                </ul>
+              </div>
+            </div>
+            <p class="mt-3">
+              <strong>영적 의미:</strong> 이러한 변화는 하나님의 백성들의 영적 상태와 
+              미래에 대한 중요한 메시지를 담고 있습니다.
+            </p>
+          </div>
+        </div>
+        
         <div class="chart-container">
           <canvas id="tribeChart"></canvas>
         </div>
@@ -323,7 +353,8 @@
         missionAnalysis: "영적 리더십을 통한 현지 교회 성장과 제자 양육에 탁월한 은사가 있습니다. 특히 교회 개척과 리더 양성에 주력하면 좋습니다.",
         biblicalFigure: "르우벤",
         biblicalReference: "네가 물의 쏟아짐 같았은즉 위대하지 못하리니 네가 아버지의 침상에 올라 더럽혔음이로다 (창세기 49:4)",
-        characteristics: "장자로서의 책임감과 리더십, 감정적 결정의 위험성을 인식하는 신중함이 필요한 사역자"
+        characteristics: "장자로서의 책임감과 리더십, 감정적 결정의 위험성을 인식하는 신중함이 필요한 사역자",
+        biblicalContext: "창세기와 요한계시록 모두에 등장하는 지파로, 영적 성숙도와 책임감의 중요성을 상징"
       },
       simeon: {
         name: "시므온 지파",
@@ -371,7 +402,8 @@
         missionAnalysis: "전략적 사고와 분별력으로 특수한 선교 상황에서 효과적으로 사역할 수 있습니다.",
         biblicalFigure: "삼손",
         biblicalReference: "단은 이스라엘의 한 지파같이 그의 백성을 심판하리로다 (창세기 49:16)",
-        characteristics: "분별력 있는 판단으로 전략적 선교를 수행하는 사역자"
+        characteristics: "분별력 있는 판단으로 전략적 선교를 수행하는 사역자",
+        biblicalContext: "창세기에는 포함되어 있으나 요한계시록에서는 제외된 지파로, 우상숭배의 위험성과 영적 순결의 중요성을 상기시킴"
       },
       naphtali: {
         name: "납달리 지파",
@@ -447,15 +479,29 @@
       },
       manasseh: {
         name: "므낫세 지파",
-        description: "회복과 치유의 사역자",
-        strengths: "치유의 은사, 회복력, 포용력",
-        weaknesses: "때로는 과거 지향적",
-        opportunities: "치유 사역, 회복 사역",
+        description: "은혜로운 화해자",
+        strengths: "화해의 은사, 관용, 포용력",
+        weaknesses: "때로는 우유부단함",
+        opportunities: "화해 사역, 갈등 중재",
         threats: "정체성 혼란",
-        missionAnalysis: "치유와 회복의 은사로 상처 입은 영혼들을 돌보는 사역을 할 수 있습니다.",
-        biblicalFigure: "기드온",
-        biblicalReference: "요셉은 결실한 가지라 샘 곁의 결실한 가지라 (창세기 49:22)",
-        characteristics: "치유와 회복의 은사로 상처 입은 이들을 돌보는 사역자"
+        missionAnalysis: "다양한 문화와 배경을 가진 사람들 사이의 화해와 중재 사역에 탁월합니다.",
+        biblicalFigure: "므낫세",
+        biblicalReference: "요셉의 장자 므낫세",
+        characteristics: "화해와 중재의 은사를 가진 사역자",
+        biblicalContext: "요한계시록에서 새롭게 강조된 지파로, 하나님의 은혜와 회복의 메시지를 상징"
+      },
+      joseph: {
+        name: "요셉 지파",
+        description: "영적 지혜와 번영의 사역자",
+        strengths: "영적 통찰력, 지혜로운 판단, 자원 관리 능력",
+        weaknesses: "때로는 현실과 이상의 균형 부족",
+        opportunities: "영적 자원의 관리와 분배, 선교 전략 수립",
+        threats: "물질주의에 대한 유혹, 영적 교만",
+        missionAnalysis: "하나님의 지혜로 자원을 관리하고 분배하며, 영적 통찰력으로 선교 전략을 수립하는데 탁월합니다.",
+        biblicalFigure: "요셉",
+        biblicalReference: "그는 무성한 가지 곧 샘 곁의 무성한 가지라 그 가지가 담을 넘었도다 (창세기 49:22)",
+        characteristics: "영적 지혜와 통찰력으로 하나님의 자원을 관리하는 사역자",
+        biblicalContext: "요한계시록에서 에브라임 대신 포함된 지파로, 하나님의 지혜와 영적 번영을 상징"
       }
     };
 
@@ -769,6 +815,66 @@
       document.getElementById('test-form').style.display = 'none';
       document.getElementById('result').style.display = 'block';
       
+      // 요한계시록의 12지파 순서 정의
+      const revelationTribes = [
+        'judah',    // 유다
+        'reuben',   // 르우벤
+        'gad',      // 갓
+        'asher',    // 아셀
+        'naphtali', // 납달리
+        'manasseh', // 므낫세
+        'simeon',   // 시므온
+        'levi',     // 레위
+        'issachar', // 잇사갈
+        'zebulun',  // 스불론
+        'joseph',   // 요셉
+        'benjamin'  // 베냐민
+      ];
+      
+      // 차트 데이터 생성
+      const chartData = revelationTribes.map(tribe => 
+        tribeCounts[tribe] || 0
+      );
+      
+      // 차트 생성
+      const ctx = document.getElementById('tribeChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: revelationTribes.map(tribe => tribeData[tribe] ? tribeData[tribe].name : tribe),
+          datasets: [{
+            label: '요한계시록 12지파 성향 분석',
+            data: chartData,
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            pointBackgroundColor: 'rgba(76, 175, 80, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(76, 175, 80, 1)'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: Math.max(...Object.values(tribeCounts)),
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // 나머지 결과 표시
       document.getElementById('tribe-result').innerHTML = `
         <h3>${tribe.name}</h3>
         <p class="lead">${tribe.description}</p>
@@ -787,33 +893,6 @@
       document.getElementById('mission-result').innerHTML = `
         <p class="lead">${tribe.missionAnalysis}</p>
       `;
-
-      // 차트 생성
-      const ctx = document.getElementById('tribeChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'radar',
-        data: {
-          labels: Object.keys(tribeCounts).map(key => tribeData[key].name),
-          datasets: [{
-            label: '성향 분석',
-            data: Object.values(tribeCounts),
-            backgroundColor: 'rgba(76, 175, 80, 0.2)',
-            borderColor: 'rgba(76, 175, 80, 1)',
-            pointBackgroundColor: 'rgba(76, 175, 80, 1)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgba(76, 175, 80, 1)'
-          }]
-        },
-        options: {
-          scales: {
-            r: {
-              beginAtZero: true,
-              max: Math.max(...Object.values(tribeCounts))
-            }
-          }
-        }
-      });
     }
 
     function resetTest() {
