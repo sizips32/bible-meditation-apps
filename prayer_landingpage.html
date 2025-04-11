@@ -207,7 +207,7 @@
     // 설정값
     const GOOGLE_SLIDE_URL = "https://docs.google.com/presentation/u/0/";
     const QR_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfvbtqWGPS2iVopJH9t75bPREoa8suUrbiLivdOjCxTPiRO3g/viewform";
-    const BACKGROUND_MUSIC_URL = "./Celestial Whisper.mp3";
+    const BACKGROUND_MUSIC_URL = "/Celestial Whisper.mp3";
 
     // 표시할 문구(기도제목, 말씀, 광고문구)들을 슬라이드 형식으로 담은 배열
     const slides = [
@@ -215,7 +215,7 @@
       "자유롭게 기도에 참가하세요!",
       "(중보기도 1)\n\n4월 19일 가족 친지 선교의 날 부흥을 위한 기도",
       "(중보기도 2)\n\n12기 침례자들을 위한 중보기도 드립니다",
-      "(중보기도 3)\n\n교우들의 가정마다 성령의 인도하심을 기도드립니다",
+      "(중보기도 3)\n\n교우들의 가정마다 성령의 인도하심을 기도 드립니다",
       "성경 말씀: 데살로니가전서 5장 17절\n\n'쉬지 말고 기도하라'",
       "성경 말씀: 빌립보서 4장 6절\n\n'아무 것도 염려하지 말고 다만 모든 일에 기도와 간구로...'",
       "성경 말씀: 마태복음 7장 7절\n\n'구하라 그리하면 너희에게 주실 것이요\n\n찾으라 그리하면 찾을 것이요...'",
@@ -242,6 +242,7 @@
     let intervalId = null;
     let audio = null;
     let isMusicPlaying = false;
+    let musicButton = null;
 
     const displayElement = document.getElementById("slide");
     const fullscreenButton = document.getElementById("fullscreenButton");
@@ -277,9 +278,143 @@
       currentAdIndex = (currentAdIndex + 1) % advertisements.length;
     }
 
-    // 음악 시간 업데이트 함수
+    // 음악 초기화 함수 개선
+    async function initAudio() {
+      try {
+        console.log('Initializing audio...');
+        if (!audio) {
+          audio = new Audio();
+          audio.preload = 'auto';
+          audio.loop = true;
+          
+          // 오디오 소스 설정 전에 이벤트 리스너 추가
+          audio.addEventListener('canplaythrough', () => {
+            console.log('Audio can play through');
+          });
+          
+          // 오디오 소스 설정
+          audio.src = BACKGROUND_MUSIC_URL;
+          
+          // 오디오 메타데이터 로드 대기
+          await new Promise((resolve, reject) => {
+            audio.addEventListener('loadedmetadata', () => {
+              console.log('Audio metadata loaded');
+              resolve();
+            });
+            
+            audio.addEventListener('error', (e) => {
+              console.error('Audio load error:', e);
+              console.error('Error code:', audio.error ? audio.error.code : 'unknown');
+              reject(e);
+            });
+            
+            // 5초 후에도 로드되지 않으면 타임아웃
+            setTimeout(() => {
+              reject(new Error('Audio load timeout'));
+            }, 5000);
+          });
+          
+          audio.addEventListener('timeupdate', updateMusicTime);
+          audio.addEventListener('ended', () => {
+            console.log('Audio ended');
+            audio.currentTime = 0;
+            if (isMusicPlaying) {
+              audio.play().catch(handlePlayError);
+            }
+          });
+          
+          audio.addEventListener('play', () => {
+            console.log('Audio started playing');
+          });
+          
+          audio.addEventListener('pause', () => {
+            console.log('Audio paused');
+          });
+        }
+        return true;
+      } catch (error) {
+        console.error('Audio initialization failed:', error);
+        handlePlayError(error);
+        return false;
+      }
+    }
+
+    // 재생 에러 처리 함수 개선
+    function handlePlayError(error) {
+      console.error('Playback error:', error);
+      console.error('Audio state:', {
+        readyState: audio ? audio.readyState : 'no audio',
+        paused: audio ? audio.paused : 'no audio',
+        currentSrc: audio ? audio.currentSrc : 'no audio',
+        error: audio && audio.error ? audio.error.code : 'no error'
+      });
+      
+      isMusicPlaying = false;
+      if (!musicButton) {
+        musicButton = document.getElementById("musicButton");
+      }
+      musicButton.textContent = "🔇 오류";
+      document.getElementById("musicTime").textContent = "음악 로드 실패";
+    }
+
+    // 음악 재생/정지 토글 개선
+    async function toggleMusic() {
+      if (!musicButton) {
+        musicButton = document.getElementById("musicButton");
+      }
+
+      try {
+        console.log('Toggle music called. Current state:', isMusicPlaying);
+        
+        if (!audio) {
+          console.log('Initializing audio for the first time');
+          const initialized = await initAudio();
+          if (!initialized) {
+            throw new Error('Audio initialization failed');
+          }
+        }
+
+        if (isMusicPlaying) {
+          console.log('Attempting to pause audio');
+          audio.pause();
+          musicButton.textContent = "🔈 재생";
+          isMusicPlaying = false;
+        } else {
+          console.log('Attempting to play audio');
+          try {
+            // 오디오 로드 상태 확인
+            if (audio.readyState < 2) { // HAVE_CURRENT_DATA
+              console.log('Audio not ready, waiting for data...');
+              await new Promise((resolve, reject) => {
+                audio.addEventListener('canplay', resolve, { once: true });
+                audio.addEventListener('error', reject, { once: true });
+                // 3초 타임아웃
+                setTimeout(() => reject(new Error('Audio load timeout')), 3000);
+              });
+            }
+            
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+              await playPromise;
+              console.log('Audio playing successfully');
+              musicButton.textContent = "⏸️ 정지";
+              isMusicPlaying = true;
+            }
+          } catch (playError) {
+            console.error('Play attempt failed:', playError);
+            throw playError;
+          }
+        }
+      } catch (error) {
+        handlePlayError(error);
+      }
+    }
+
+    // 음악 시간 업데이트 함수 개선
     function updateMusicTime() {
-      if (audio && !audio.paused) {
+      if (!audio || audio.paused) return;
+      
+      try {
         const current = Math.floor(audio.currentTime);
         const duration = Math.floor(audio.duration);
         const currentMin = Math.floor(current / 60);
@@ -287,51 +422,14 @@
         const durationMin = Math.floor(duration / 60);
         const durationSec = duration % 60;
         
-        document.getElementById("musicTime").textContent = 
-          `${currentMin}:${currentSec.toString().padStart(2, '0')} / ${durationMin}:${durationSec.toString().padStart(2, '0')}`;
+        const timeElement = document.getElementById("musicTime");
+        if (timeElement) {
+          timeElement.textContent = 
+            `${currentMin}:${currentSec.toString().padStart(2, '0')} / ${durationMin}:${durationSec.toString().padStart(2, '0')}`;
+        }
+      } catch (error) {
+        console.error('Error updating music time:', error);
       }
-    }
-
-    // 음악 초기화 함수 개선
-    function initAudio() {
-      if (!audio) {
-        audio = new Audio(BACKGROUND_MUSIC_URL);
-        audio.loop = true;
-        
-        audio.addEventListener('timeupdate', updateMusicTime);
-        audio.addEventListener('ended', () => {
-          audio.currentTime = 0;
-          if (isMusicPlaying) {
-            audio.play();
-          }
-        });
-
-        // 오디오 로드 에러 처리
-        audio.addEventListener('error', (e) => {
-          console.error('Audio error:', e);
-          document.getElementById("musicTime").textContent = "음악 로드 실패";
-          document.getElementById("musicButton").textContent = "🔇 오류";
-        });
-      }
-    }
-
-    // 음악 재생/정지 토글
-    function toggleMusic() {
-      initAudio();
-      const musicButton = document.getElementById("musicButton");
-      
-      if (isMusicPlaying) {
-        audio.pause();
-        musicButton.textContent = "🔈 재생";
-      } else {
-        audio.play().catch(e => {
-          console.error('Playback failed:', e);
-          musicButton.textContent = "🔇 오류";
-          return;
-        });
-        musicButton.textContent = "⏸️ 정지";
-      }
-      isMusicPlaying = !isMusicPlaying;
     }
 
     // QR 모달 표시/숨김
@@ -438,31 +536,24 @@
       setTimeout(optimizeFontSize, 100);
     });
 
-    // 부모 창에서 오는 메시지 수신
-    window.addEventListener('message', function(event) {
+    // 부모 창에서 오는 메시지 수신 개선
+    window.addEventListener('message', async function(event) {
       if (event.data.type === 'TOGGLE_MUSIC') {
+        if (!audio) {
+          await initAudio();
+        }
         if (event.data.playing) {
-          audio.play();
+          audio.play().catch(handlePlayError);
         } else {
           audio.pause();
         }
-        isPlaying = event.data.playing;
+        isMusicPlaying = event.data.playing;
       } else if (event.data.type === 'GET_MUSIC_STATE') {
-        // 현재 음악 상태를 부모 창에 전송
         window.parent.postMessage({
           type: 'MUSIC_STATE',
-          playing: isPlaying
+          playing: isMusicPlaying
         }, '*');
       }
-    });
-
-    // 오디오 이벤트 리스너
-    audio.addEventListener('ended', function() {
-      isPlaying = false;
-      window.parent.postMessage({
-        type: 'MUSIC_STATE',
-        playing: false
-      }, '*');
     });
   </script>
 </body>
