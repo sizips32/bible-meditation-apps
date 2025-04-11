@@ -101,21 +101,21 @@
       }
     }
     .biblical-background {
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);
     }
     
     .test-purpose {
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(135, 206, 235, 0.1);
+      box-shadow: 0 4px 15px rgba(135, 206, 235, 0.1);
     }
     
     .prayer-section {
-      background-color: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(176, 224, 230, 0.1);
+      box-shadow: 0 4px 15px rgba(176, 224, 230, 0.1);
     }
     
     .prayer-text {
@@ -130,6 +130,59 @@
     .btn-lg {
       padding: 15px 30px;
       font-size: 1.2rem;
+    }
+
+    #intro-section {
+      position: relative;
+      background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.15),  /* 황금색 */
+        rgba(135, 206, 235, 0.2), /* 하늘색 */
+        rgba(176, 224, 230, 0.25) /* 파우더 블루 */
+      );
+      padding: 3rem;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(255, 215, 0, 0.2);
+    }
+
+    #intro-section::before {
+      content: '✝';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      font-size: 500px;
+      color: rgba(255, 255, 255, 0.08);
+      z-index: 0;
+      font-family: serif;
+    }
+
+    #intro-section > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, rgba(255, 215, 0, 0.8), rgba(135, 206, 235, 0.8));
+      border: none;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      font-weight: bold;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+      background: linear-gradient(45deg, rgba(255, 215, 0, 0.9), rgba(135, 206, 235, 0.9));
+    }
+
+    body {
+      background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.05),
+        rgba(135, 206, 235, 0.05)
+      );
+      min-height: 100vh;
     }
   </style>
 </head>
