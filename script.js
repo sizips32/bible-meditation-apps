@@ -969,28 +969,21 @@ function generatePrayerList(prayers, type) {
   const totalPages = Math.ceil(prayers.length / itemsPerPage);
 
   let html = `
-    <table class="prayer-table">
-      <thead>
-        <tr>
-          <th>제목</th>
-          ${type === 'intercessory' ? '<th>중보 대상</th>' : ''}
-          <th>작성일</th>
-          <th>상태</th>
-          <th>관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${paginatedPrayers.map(prayer => `
-          <tr class="${prayer.answered ? 'prayer-answered' : ''}" data-id="${prayer.id}">
-            <td class="prayer-title" onclick="viewPrayer('${type}', ${prayer.id})">${prayer.title}</td>
-            ${type === 'intercessory' ? `<td>${prayer.target}</td>` : ''}
-            <td>${formatDate(prayer.created_at)}</td>
-            <td>
-              <span class="prayer-status ${prayer.answered ? 'answered' : 'ongoing'}">
-                ${prayer.answered ? '응답됨' : '진행중'}
-              </span>
-            </td>
-            <td class="prayer-actions">
+    <div class="prayer-items">
+      ${paginatedPrayers.map(prayer => `
+        <div class="prayer-item ${prayer.answered ? 'prayer-answered' : ''}" data-id="${prayer.id}">
+          <div class="prayer-item-header">
+            <div class="prayer-item-title" onclick="viewPrayer('${type}', ${prayer.id})">
+              <h4>${prayer.title}</h4>
+              <div class="prayer-meta">
+                ${type === 'intercessory' ? `<span class="prayer-target">🙏 ${prayer.target}</span>` : ''}
+                <span class="prayer-date">📅 ${formatDate(prayer.created_at)}</span>
+                <span class="prayer-status ${prayer.answered ? 'answered' : 'ongoing'}">
+                  ${prayer.answered ? '✨ 응답됨' : '🙏 진행중'}
+                </span>
+              </div>
+            </div>
+            <div class="prayer-item-actions">
               <button class="btn-edit" onclick="edit${type.charAt(0).toUpperCase() + type.slice(1)}Prayer(${prayer.id})">
                 <i class="fas fa-edit"></i>
               </button>
@@ -1000,11 +993,14 @@ function generatePrayerList(prayers, type) {
               <button class="btn-answer" onclick="togglePrayerAnswered('${type}', ${prayer.id}, ${!prayer.answered})">
                 <i class="fas ${prayer.answered ? 'fa-times-circle' : 'fa-check-circle'}"></i>
               </button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
+            </div>
+          </div>
+          <div class="prayer-item-content">
+            ${prayer.content}
+          </div>
+        </div>
+      `).join('')}
+    </div>
   `;
 
   // 페이지네이션 추가
